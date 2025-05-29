@@ -3,6 +3,8 @@ name: macstadium-build-aar
 on:
   push:
     branches: [ "main", "develop" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main", "develop" ]
 
