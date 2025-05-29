@@ -10,6 +10,8 @@ on:
 
 env:
   ANDROID_HOME: /Users/administrator/Library/Android/sdk
+  GITHUB_ACTOR: ${{ github.actor }}
+  PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
 jobs:
   build:
@@ -64,5 +66,3 @@ jobs:
           files: build/outputs/aar/*.aar
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-
