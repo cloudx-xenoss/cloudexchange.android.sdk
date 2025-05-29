@@ -36,3 +36,14 @@ jobs:
         with:
           name: cloudx-sdk-aar
           path: build/outputs/aar/*.aar
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          files: build/outputs/aar/*.aar
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
