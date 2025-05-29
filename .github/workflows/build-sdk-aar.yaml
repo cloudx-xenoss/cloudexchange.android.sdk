@@ -32,7 +32,7 @@ jobs:
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
 
       - name: Upload AAR artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudx-sdk-aar
           path: build/outputs/aar/*.aar
