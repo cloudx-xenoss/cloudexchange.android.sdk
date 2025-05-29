@@ -37,7 +37,23 @@ jobs:
           name: cloudx-sdk-aar
           path: build/outputs/aar/*.aar
 
-      - name: Create GitHub Release
+      - name: 🔍 Show current directory structure
+        run: |
+          echo "📁 Current path: $(pwd)"
+          echo "📂 Listing top-level contents:"
+          ls -la
+
+      - name: 📂 List contents of build/outputs/aar/
+        run: |
+          if [ -d build/outputs/aar ]; then
+            echo "✅ Found AAR output directory:"
+            ls -la build/outputs/aar
+          else
+            echo "❌ build/outputs/aar directory does not exist"
+            exit 1
+          fi
+
+      - name: 🚀 Create GitHub Release with AAR
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -46,4 +62,5 @@ jobs:
           files: build/outputs/aar/*.aar
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
 
