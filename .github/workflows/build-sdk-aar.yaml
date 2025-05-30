@@ -10,7 +10,8 @@ on:
 
 env:
   ANDROID_HOME: /Users/administrator/Library/Android/sdk
-  GITHUB_ACTOR: ${{ github.actor }}
+  GITHUB_ACTOR: ${{ secrets.PAT_USERNAME }} 
+  PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
   PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
 jobs:
@@ -36,9 +37,10 @@ jobs:
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
 
       - name: 📦 Publish to GitHub Packages
+        if: startsWith(github.ref, 'refs/tags/')
         run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
+          PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: 📦 Upload AAR artifact
