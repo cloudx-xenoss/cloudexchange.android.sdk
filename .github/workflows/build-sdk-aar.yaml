@@ -35,6 +35,12 @@ jobs:
       - name: Build AAR
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
 
+      - name: 📦 Publish to GitHub Packages
+        run: ./gradlew publish
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
       - name: Upload AAR artifact
         uses: actions/upload-artifact@v4
         with:
