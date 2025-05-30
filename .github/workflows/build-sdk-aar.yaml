@@ -10,7 +10,6 @@ on:
 
 env:
   ANDROID_HOME: /Users/administrator/Library/Android/sdk
-  GITHUB_ACTOR: ${{ secrets.PAT_USERNAME }} 
   PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
   PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
