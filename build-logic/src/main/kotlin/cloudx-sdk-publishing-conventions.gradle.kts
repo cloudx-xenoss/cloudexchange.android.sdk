@@ -54,7 +54,9 @@ publishing {
             artifactId = "cloudx-sdk"
             version = versionFromTag
 
-            artifact("$buildDir/outputs/aar/cloudx-sdk-release.aar")
+            afterEvaluate {
+                from(components["release"])
+            }
         }
     }
 
