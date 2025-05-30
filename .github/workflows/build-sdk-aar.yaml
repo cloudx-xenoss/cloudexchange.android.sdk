@@ -19,29 +19,29 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant execute permission for Gradle wrapper
+      - name: 🔐 Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Build AAR
+      - name: 🛠️ Build AAR
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
 
       - name: 📦 Publish to GitHub Packages
-        run: ./gradlew publish
+        run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Upload AAR artifact
+      - name: 📦 Upload AAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: cloudx-sdk-aar
@@ -50,18 +50,12 @@ jobs:
       - name: 🔍 Show current directory structure
         run: |
           echo "📁 Current path: $(pwd)"
-          echo "📂 Listing top-level contents:"
+          echo "📂 Top-level contents:"
           ls -la
-
-      - name: 📂 List contents of build/outputs/aar/
-        run: |
-          if [ -d build/outputs/aar ]; then
-            echo "✅ Found AAR output directory:"
-            ls -la build/outputs/aar
-          else
-            echo "❌ build/outputs/aar directory does not exist"
-            exit 1
-          fi
+          echo "📂 SDK build/outputs structure:"
+          ls -la build/outputs || true
+          echo "📂 AAR files:"
+          ls -la build/outputs/aar || true
 
       - name: 🚀 Create GitHub Release with AAR
         uses: softprops/action-gh-release@v1
