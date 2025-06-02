@@ -19,33 +19,9 @@ android {
     }
 }
 
-//publishing {
-//    publications {
-//        register<MavenPublication>(releaseVariant) {
-//            groupId = libs.mavenGroupId
-//            artifactId = project.name
-//            version = resolvedVersion
-//
-//            afterEvaluate {
-//                from(components[releaseVariant])
-//            }
-//        }
-//    }
-//
-//    repositories {
-//        maven {
-//            name = "GitHubPackages"
-//            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk.internal")
-//            credentials {
-//                username = System.getenv("GITHUB_ACTOR")
-//                password = System.getenv("PAT_TOKEN")
-//            }
-//        }
-//    }
-//}
-
 publishing {
     publications {
+
         val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
         version = versionFromTag
 
