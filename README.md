@@ -1,1 +1,42 @@
-# cloudxchange.sdk.android.internal
+🚀 **CloudX Android SDK Installation Guide**
+
+### Prerequisite: Get a GitHub Token
+* Go to ~[GitHub PAT Settings](https://github.com/settings/tokens)~.
+* Generate a new token with `read:packages` permission.
+* Use your GitHub username and token in the credentials block below.
+
+### 1. Add GitHub Maven Repository
+In your project’s `settings.gradle` or `settings.gradle.kts`:
+
+```
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk.internal")
+            credentials {
+                username = "<GITHUB_USERNAME>" 
+                password = "<GITHUB_TOKEN>"    
+            }
+        }
+    }
+}
+```
+
+### 2. Add SDK Dependency
+In your app/module `build.gradle` (or `build.gradle.kts`):
+```
+dependencies {
+    implementation("com.cloudx:cloudx-sdk:<latest-version>")
+}
+```
+
+> *Replace* <latest-version> *with the desired version (e.g.* `v0.0.1.07`*).*
+
+### 4. Sync and Build
+* Sync your project in Android Studio.
+* The SDK will be downloaded automatically from GitHub Packages.
+
+**That’s it! You’re ready to use the CloudX Android SDK.**
