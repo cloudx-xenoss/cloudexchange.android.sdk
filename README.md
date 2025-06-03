@@ -40,3 +40,16 @@ dependencies {
 * The SDK will be downloaded automatically from GitHub Packages.
 
 **That’s it! You’re ready to use the CloudX Android SDK.**
+
+---
+
+### ➡️ Next Steps: Add Adapters
+
+Integrate additional adapters as needed for your ad mediation:
+
+- [Google Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-google)
+- [CloudX Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-cloudx)
+- [Mintegral Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-mintegral)
+- [Meta Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-meta)
+
+> Visit each link for setup guides and available versions.
