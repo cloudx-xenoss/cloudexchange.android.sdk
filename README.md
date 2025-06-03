@@ -1,4 +1,4 @@
-🚀 **CloudX Android SDK Installation Guide**
+## **🚀CloudX Android SDK Installation Guide**
 
 ### Prerequisite: Get a GitHub Token
 * Go to [GitHub PAT Settings](https://github.com/settings/tokens).
