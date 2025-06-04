@@ -2,7 +2,7 @@ package io.cloudx.sdk.internal.cdp
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
-import io.cloudx.sdk.internal.httpclient.HttpClient
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import org.json.JSONObject
 
 /**
@@ -15,5 +15,5 @@ internal interface CdpApi {
 internal fun CdpApi(endpointUrl: String, timeoutMillis: Long): CdpApi = CdpApiImpl(
     endpointUrl = endpointUrl,
     timeoutMillis = timeoutMillis,
-    httpClient = HttpClient()
+    httpClient = CloudXHttpClient()
 )

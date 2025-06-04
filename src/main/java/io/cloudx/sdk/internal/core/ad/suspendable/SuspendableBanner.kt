@@ -3,7 +3,7 @@ package io.cloudx.sdk.internal.core.ad.suspendable
 import io.cloudx.sdk.Destroyable
 import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.core.ad.AdMetaData
-import io.cloudx.sdk.internal.httpclient.HttpClient
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
@@ -73,7 +73,7 @@ private class SuspendableBannerImpl(
 //                    CloudXLogger.debug("BannerImpl", "NURL: Sending for $adUnitId")
                     scope.launch(Dispatchers.IO) {
                         try {
-                            val response: HttpResponse = HttpClient().get(completeUrl)
+                            val response: HttpResponse = CloudXHttpClient().get(completeUrl)
                             if (response.status.isSuccess()) {
                                 val statusCode = response.status
 //                                CloudXLogger.debug("BannerImpl", "NURL: Success for $adUnitId, ${statusCode.value}")

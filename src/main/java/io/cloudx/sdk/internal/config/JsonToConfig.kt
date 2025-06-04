@@ -30,10 +30,12 @@ internal suspend fun jsonToConfig(json: String): Result<Config, Error> =
                     bidders = root.getJSONArray("bidders").toBidders(),
                     placements = root.getJSONArray("placements").toPlacements(),
                     metricsEndpointUrl = root.getString("metricsEndpointURL"),
+                    geoDataEndpointURL = root.optString("geoDataEndpointURL", null),
                     sessionId = root.getString("sessionID") + UUID.randomUUID().toString(),
                     organizationId = root.optString("organizationID", null),
                     accountId = root.optString("accountID", null),
                     trackers = root.optJSONArray("tracking")?.toTrackers(),
+                    geoHeaders = root.optJSONArray("geoHeaders")?.toGeoHeaders(),
                     rawJson = root
                 )
             )
@@ -72,6 +74,19 @@ private fun JSONArray.toTrackers(): List<String> {
         params.add(param)
     }
     return params
+}
+
+private fun JSONArray.toGeoHeaders(): List<Config.GeoHeader> {
+    val headers = mutableListOf<Config.GeoHeader>()
+    for (i in 0 until length()) {
+        val obj = getJSONObject(i)
+        val source = obj.optString("source")
+        val target = obj.optString("target")
+        if (source.isNotEmpty() && target.isNotEmpty()) {
+            headers.add(Config.GeoHeader(source, target))
+        }
+    }
+    return headers
 }
 
 private fun JSONArray.toPlacements(): Map<String, Config.Placement> {

@@ -18,9 +18,10 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.resolver.AdapterFactoryResolver
 import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
+import io.cloudx.sdk.internal.geo.GeoApi
+import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
 import io.cloudx.sdk.internal.imp_tracker.model.ImpressionDataStore
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.model.LocalData
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
@@ -47,6 +48,7 @@ internal class InitializationServiceImpl(
     private val impressionTracker: ImpressionTracker,
     private val provideAppInfo: AppInfoProvider,
     private val provideDeviceInfo: DeviceInfoProvider,
+    private val geoApi: GeoApi
     ) : InitializationService {
 
     override val initialized: Boolean
@@ -83,7 +85,27 @@ internal class InitializationServiceImpl(
 
                 metricsTracker.init(appKey, cfg)
 
-                // TODO. Refactor.
+                val geoDataResult = geoApi.fetchGeoHeaders(ResolvedEndpoints.geoEndpoint)
+                if (geoDataResult is Result.Success) {
+                    val headersMap = geoDataResult.value
+
+                    println("hop: headersMap (all response headers) = $headersMap")
+                    println("hop: cfg.geoHeaders = ${cfg.geoHeaders}")
+
+                    val geoInfo: Map<String, String> = cfg.geoHeaders?.mapNotNull { header ->
+                        val sourceHeader = header.source
+                        val targetField = header.target
+                        val value = headersMap[sourceHeader]
+                        println("hop: Mapping source='$sourceHeader' to target='$targetField', value='$value'")
+                        value?.let { targetField to it }
+                    }?.toMap() ?: emptyMap()
+
+                    println("hop: geoInfo (mapped) = $geoInfo")
+
+                    CloudXLogger.info("MainActivity", "geo data: $geoInfo")
+                    GeoInfoHolder.setGeoInfo(geoInfo)
+                }
+
                 val factories = resolveAdapters(cfg)
                 initAdFactory(cfg, factories)
                 initializeAdapterNetworks(cfg, activity)

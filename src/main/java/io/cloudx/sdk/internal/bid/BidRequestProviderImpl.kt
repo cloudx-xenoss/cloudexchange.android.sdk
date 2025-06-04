@@ -11,6 +11,7 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionType
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfo
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.gaid.GAIDProvider
+import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.httpclient.UserAgentProvider
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.location.LocationProvider
@@ -20,7 +21,6 @@ import io.cloudx.sdk.internal.screen.ScreenService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.targeting.TargetingService
 import io.cloudx.sdk.testing.SdkEnvironment
-import io.ktor.utils.io.core.withBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -83,6 +83,7 @@ internal class BidRequestProviderImpl(
                     put("ifa", ifaOverride.ifEmpty { adPrivacyData.gaid })
 
                     put("geo", JSONObject().apply {
+
                         locationProvider()?.let { ld ->
                             put("lat", ld.lat)
                             put("lon", ld.lon)
@@ -90,6 +91,9 @@ internal class BidRequestProviderImpl(
                             put("type", 1) // 1 - gps/location services source.
                         }
                         put("utcoffset", TimeZone.getDefault().getOffset(Date().time) / 60000 /* ms -> s*/)
+                        GeoInfoHolder.getGeoInfo().forEach { (key, value) ->
+                            put(key, value)
+                        }
                     })
 
                     put("h", screenData.heightPx)
@@ -237,12 +241,6 @@ internal class BidRequestProviderImpl(
                                         put("value", v)
                                     })
                                 }
-
-                                put(JSONObject().apply {
-                                            put("key", "age")
-                                            put("source", "lambda")
-                                            put("value", "30")
-                                        })
                             })
                         }
                     })

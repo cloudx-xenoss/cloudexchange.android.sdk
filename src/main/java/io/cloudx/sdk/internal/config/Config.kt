@@ -19,11 +19,13 @@ internal class Config(
     val eventTrackingEndpointUrl: String,
     val impressionTrackerURL: String?,
     val metricsEndpointUrl: String,
+    val geoDataEndpointURL: String,
     val organizationId: String?,
     val accountId: String?,
     val bidders: Map<AdNetwork, Bidder>,
     val placements: Map<String, Placement>,
     val trackers: List<String>?,
+    val geoHeaders: List<GeoHeader>?,
     val rawJson: JSONObject?
 ) {
 
@@ -155,4 +157,9 @@ internal class Config(
             val ratio: Double
         )
     }
+
+    data class GeoHeader(
+        val source: String,
+        val target: String
+    )
 }

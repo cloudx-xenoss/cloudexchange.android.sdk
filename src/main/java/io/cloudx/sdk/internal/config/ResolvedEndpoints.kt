@@ -14,9 +14,15 @@ import kotlin.random.Random
 internal object ResolvedEndpoints {
     lateinit var auctionEndpoint: String
     lateinit var cdpEndpoint: String
+    lateinit var geoEndpoint: String
+
     var testGroupName: String = ""
 
     fun resolveFrom(config: Config, random: Random = Random) {
+        // geoApi - No AB test
+        geoEndpoint = config.geoDataEndpointURL
+
+        // AB test configs
         CloudXLogger.debug("Endpoints", "================")
         val randomValue = random.nextDouble()
         CloudXLogger.debug("Endpoints", "Generated random value: $randomValue")

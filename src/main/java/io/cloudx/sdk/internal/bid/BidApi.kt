@@ -2,7 +2,7 @@ package io.cloudx.sdk.internal.bid
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
-import io.cloudx.sdk.internal.httpclient.HttpClient
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import org.json.JSONObject
 
 /**
@@ -17,5 +17,5 @@ internal interface BidApi {
 internal fun BidApi(endpointUrl: String, timeoutMillis: Long): BidApi = BidApiImpl(
     endpointUrl = endpointUrl,
     timeoutMillis = timeoutMillis,
-    httpClient = HttpClient()
+    httpClient = CloudXHttpClient()
 )

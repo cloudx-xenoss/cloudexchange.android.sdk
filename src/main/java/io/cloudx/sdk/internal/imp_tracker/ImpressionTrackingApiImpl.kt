@@ -4,19 +4,12 @@ import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.CloudXLogger
 import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.Logger
-import io.cloudx.sdk.internal.db.CloudXDb
-import io.cloudx.sdk.internal.db.imp_tracking.CachedImpression
-import io.cloudx.sdk.internal.imp_tracker.model.ImpressionId
-import io.cloudx.sdk.internal.imp_tracker.model.encoded
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.retry
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.CoroutineScope
-import java.util.UUID
 
 internal class ImpressionTrackingApiImpl(
     private val timeoutMillis: Long,
@@ -41,6 +34,8 @@ internal class ImpressionTrackingApiImpl(
             appendLine("  EventValue: $eventValue")
             appendLine("  EventName: $eventName")
         })
+
+        CloudXLogger.info("MainActivity", "Sent Impression Tracking Data")
 
         return try {
             val response = httpClient.get(endpointUrl) {

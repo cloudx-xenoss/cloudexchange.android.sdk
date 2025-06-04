@@ -2,7 +2,7 @@ package io.cloudx.sdk.internal.tracking
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
-import io.cloudx.sdk.internal.httpclient.HttpClient
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 
 internal interface MetricsApi {
 
@@ -18,5 +18,5 @@ internal fun MetricsApi(): MetricsApi = MetricsApiImpl(
     timeoutMillis = 5000,
     retryMax = 3,
     retryDelayMillis = 1000,
-    httpClient = HttpClient()
+    httpClient = CloudXHttpClient()
 )

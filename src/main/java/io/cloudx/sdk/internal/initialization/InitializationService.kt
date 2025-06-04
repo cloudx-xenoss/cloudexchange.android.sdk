@@ -10,6 +10,7 @@ import io.cloudx.sdk.internal.config.ConfigApi
 import io.cloudx.sdk.internal.config.ConfigRequestProvider
 import io.cloudx.sdk.internal.core.resolver.AdapterFactoryResolver
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
+import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
 import io.cloudx.sdk.internal.privacy.PrivacyService
@@ -46,7 +47,8 @@ internal fun InitializationService(
     metricsTracker: MetricsTracker = MetricsTracker(),
     impressionTracker: ImpressionTracker = ImpressionTracker(),
     appInfoProvider: AppInfoProvider = AppInfoProvider(),
-    deviceInfoProvider: DeviceInfoProvider = DeviceInfoProvider()
+    deviceInfoProvider: DeviceInfoProvider = DeviceInfoProvider(),
+    geoApi: GeoApi = GeoApi()
 ): InitializationService =
     InitializationServiceImpl(
         configApi,
@@ -56,5 +58,6 @@ internal fun InitializationService(
         metricsTracker,
         impressionTracker,
         appInfoProvider,
-        deviceInfoProvider
+        deviceInfoProvider,
+        geoApi
     )

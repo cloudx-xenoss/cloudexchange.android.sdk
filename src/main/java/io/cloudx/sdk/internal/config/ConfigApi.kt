@@ -2,7 +2,7 @@ package io.cloudx.sdk.internal.config
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
-import io.cloudx.sdk.internal.httpclient.HttpClient
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import io.ktor.client.HttpClient
 
 /**
@@ -22,7 +22,7 @@ internal fun ConfigApi(
     endpointUrl: String,
     timeoutMillis: Long = 60_000,
     retryMax: Int = 4,
-    httpClient: HttpClient = HttpClient()
+    httpClient: HttpClient = CloudXHttpClient()
 ): ConfigApi = ConfigApiImpl(
     endpointUrl = endpointUrl,
     timeoutMillis = timeoutMillis,

@@ -18,7 +18,7 @@ internal fun AdEventApi(
     timeoutMillis: Long = 5000L,
     retryMax: Int = 3,
     retryDelayMillis: Long = 1000L,
-    httpClient: HttpClient = io.cloudx.sdk.internal.httpclient.HttpClient(),
+    httpClient: HttpClient = io.cloudx.sdk.internal.httpclient.CloudXHttpClient(),
     scope: CoroutineScope = GlobalScopes.IO,
 ): AdEventApi =
     AdEventApiImpl(

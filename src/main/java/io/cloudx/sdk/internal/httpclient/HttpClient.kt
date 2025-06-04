@@ -5,7 +5,7 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
 
-internal fun HttpClient(): HttpClient = LazySingleInstance
+internal fun CloudXHttpClient(): HttpClient = LazySingleInstance
 
 private val LazySingleInstance by lazy {
     HttpClient {
