@@ -33,7 +33,7 @@ dependencies {
 }
 ```
 
-> *Replace* <latest-version> *with the desired version (e.g.* `v0.0.1.07`*).*
+> *Replace* <latest-version> *with the desired version (e.g.* `v0.0.1.08`*).*
 
 ### 4. Sync and Build
 * Sync your project in Android Studio.
