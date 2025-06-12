@@ -4,6 +4,7 @@ import io.cloudx.sdk.Result
 import io.cloudx.sdk.RoboMockkTest
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
+import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.MetricsTracker
@@ -28,7 +29,8 @@ class InitializationServiceImplTest : RoboMockkTest() {
             metricsTracker = MetricsTracker(),
             provideAppInfo = AppInfoProvider(),
             provideDeviceInfo = DeviceInfoProvider(),
-            impressionTracker = ImpressionTracker()
+            impressionTracker = ImpressionTracker(),
+            geoApi = GeoApi()
         )
 
         val result = initializationService.initialize("random_app_key", activity = mockk())

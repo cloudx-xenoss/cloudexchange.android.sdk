@@ -28,7 +28,10 @@ internal class MockConfigAPIWithPredefinedConfig : ConfigApi {
             impressionTrackerURL = "nopoint",
             organizationId = "",
             accountId = "",
+            geoDataEndpointURL = "nopoint",
+            geoHeaders = emptyList(),
             trackers = emptyList(),
+            appKeyOverride = "",
             rawJson = null,
 
             placements = mapOf(

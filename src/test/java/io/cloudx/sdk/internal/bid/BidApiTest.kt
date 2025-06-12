@@ -60,11 +60,13 @@ class BidApiTest: RoboMockkTest() {
             adId = "mrec-300x250-538295628539",
             adType = AdType.Banner.MREC,
             lineItems = emptyList(),
-            placementName = ""
+            placementName = "",
+            accountId = "",
+            appKey = ""
         )
 
         val bidParams = provideBidRequest.invoke(params)
-        val result = bidApi.invoke(bidParams)
+        val result = bidApi.invoke("", bidParams)
 
         assert(result is Result.Success) {
             "Expected successful endpoint response, actual: ${(result as Result.Failure).value.description}"
