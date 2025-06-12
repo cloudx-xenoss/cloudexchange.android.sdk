@@ -39,7 +39,9 @@ internal fun Interstitial(
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     listener: InterstitialListener,
-    lineItems: List<Config.LineItem>?
+    lineItems: List<Config.LineItem>?,
+    accountId: String,
+    appKey: String
 ): CloudXInterstitialAd {
 
     val bidRequestProvider = BidRequestProvider(
@@ -60,7 +62,9 @@ internal fun Interstitial(
             impressionTracker,
             metricsTracker,
             0,
-            lineItems
+            lineItems,
+            accountId,
+            appKey
         )
 
     return InterstitialImpl(

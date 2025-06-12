@@ -32,7 +32,9 @@ internal fun BidInterstitialSource(
     impressionTracker: ImpressionTracker,
     metricsTracker: MetricsTracker,
     bidRequestTimeoutMillis: Long,
-    lineItems: List<Config.LineItem>?
+    lineItems: List<Config.LineItem>?,
+    accountId: String,
+    appKey: String
 ): BidAdSource<SuspendableInterstitial> {
     val adType = AdType.Interstitial
 
@@ -42,7 +44,9 @@ internal fun BidInterstitialSource(
             adId = placementId,
             adType = adType,
             placementName,
-            lineItems = lineItems
+            lineItems = lineItems,
+            accountId = accountId,
+            appKey = appKey
         ),
         requestBid,
         cdpApi,

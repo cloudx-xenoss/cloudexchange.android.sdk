@@ -49,7 +49,9 @@ internal fun RewardedInterstitial(
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     listener: RewardedInterstitialListener,
-    lineItems: List<Config.LineItem>?
+    lineItems: List<Config.LineItem>?,
+    accountId: String,
+    appKey: String
 ): CloudXRewardedAd {
 
     val bidRequestProvider = BidRequestProvider(
@@ -70,7 +72,9 @@ internal fun RewardedInterstitial(
             impressionTracker,
             metricsTracker,
             0,
-            lineItems
+            lineItems,
+            accountId,
+            appKey
         )
 
     return RewardedInterstitialImpl(

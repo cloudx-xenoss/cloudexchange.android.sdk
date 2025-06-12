@@ -27,6 +27,7 @@ import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
 internal class AdFactoryImpl(
+    private val appKey: String,
     private val config: Config,
     private val factories: BidAdNetworkFactories,
     private val adEventApi: AdEventApi,
@@ -68,7 +69,9 @@ internal class AdFactoryImpl(
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
             listener = params.listener.decorate(),
-            lineItems = lineItems
+            lineItems = lineItems,
+            accountId = config.accountId ?: "",
+            appKey = appKey
         )
     }
 
@@ -101,7 +104,9 @@ internal class AdFactoryImpl(
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
             listener = params.listener.decorate(),
-            lineItems = lineItems
+            lineItems = lineItems,
+            accountId = config.accountId ?: "",
+            appKey = appKey
         )
     }
 
@@ -181,7 +186,9 @@ internal class AdFactoryImpl(
                     connectionStatusService = connectionStatusService,
                     activityLifecycleService = activityLifecycleService,
                     appLifecycleService = appLifecycleService,
-                    lineItems
+                    lineItems,
+                    config.accountId ?: "",
+                    appKey = appKey
                 )
             },
             hasCloseButton = hasCloseButton,

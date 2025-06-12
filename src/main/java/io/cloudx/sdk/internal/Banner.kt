@@ -11,7 +11,7 @@ import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
 import io.cloudx.sdk.internal.bid.BidApi
 import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.cdp.CdpApi
-import io.cloudx.sdk.internal.common.BidBackoffAlgorithm
+import io.cloudx.sdk.internal.common.BidBackoffMechanism
 import io.cloudx.sdk.internal.common.service.ActivityLifecycleService
 import io.cloudx.sdk.internal.common.service.AppLifecycleService
 import io.cloudx.sdk.internal.config.Config
@@ -22,7 +22,6 @@ import io.cloudx.sdk.internal.core.ad.source.bid.BidBannerSource
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBannerEvent
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import kotlinx.coroutines.CoroutineScope
@@ -41,7 +40,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-internal interface Banner: Destroyable {
+internal interface Banner : Destroyable {
 
     var listener: AdViewListener?
 }
@@ -68,7 +67,9 @@ internal fun Banner(
     connectionStatusService: ConnectionStatusService,
     activityLifecycleService: ActivityLifecycleService,
     appLifecycleService: AppLifecycleService,
-    lineItems: List<Config.LineItem>?
+    lineItems: List<Config.LineItem>?,
+    accountId: String,
+    appKey: String
 ): Banner {
 
     val bidRequestProvider = BidRequestProvider(
@@ -93,7 +94,9 @@ internal fun Banner(
             metricsTracker,
             miscParams,
             0,
-            lineItems
+            lineItems,
+            accountId,
+            appKey
         )
 
     return BannerImpl(
@@ -123,14 +126,13 @@ private class BannerImpl(
     private val connectionStatusService: ConnectionStatusService,
     private val activityLifecycleService: ActivityLifecycleService,
     private val appLifecycleService: AppLifecycleService
-): Banner {
+) : Banner {
 
     private val TAG = "BannerImpl"
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
-    private val bidBackoffAlgorithm =
-        BidBackoffAlgorithm(bidMaxBackOffTimeMillis)
+    private val bidBackoffMechanism = BidBackoffMechanism()
 
     override var listener: AdViewListener? = null
         set(listener) {
@@ -248,20 +250,20 @@ private class BannerImpl(
             loadedBanner = bidAdSource.requestBid()?.loadOrDestroyBanner()
 
             if (loadedBanner == null) {
-                bidBackoffAlgorithm.notifyAdLoadFailed()
+                bidBackoffMechanism.notifySoftError()
 
-                if (bidBackoffAlgorithm.isThreshold) {
-                    val delayMillis = bidBackoffAlgorithm.calculateDelayMillis()
+                // Delay after each batch of 3 fails
+                CloudXLogger.debug(TAG, "Soft error delay for ${bidBackoffMechanism.getBatchDelay()}ms (batch)")
+                delay(bidBackoffMechanism.getBatchDelay())
 
-                    CloudXLogger.debug(
-                        TAG,
-                        "delaying for: ${delayMillis}ms as ${bidBackoffAlgorithm.bidFails} bid responses have failed to load"
-                    )
+                if (bidBackoffMechanism.isBatchEnd) {
+                    CloudXLogger.debug(TAG, "Batch of 3 soft errors: Delaying for ${bidBackoffMechanism.getBarrierDelay()}ms (barrier pause)")
 
-                    delay(delayMillis)
+                    // Additional barrier delay after each batch
+                    delay(bidBackoffMechanism.getBarrierDelay())
                 }
             } else {
-                bidBackoffAlgorithm.notifyAdLoadSuccess()
+                bidBackoffMechanism.notifySuccess()
             }
         }
 

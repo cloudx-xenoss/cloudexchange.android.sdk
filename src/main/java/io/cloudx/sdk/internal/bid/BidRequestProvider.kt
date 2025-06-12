@@ -31,7 +31,9 @@ internal interface BidRequestProvider {
         val adId: String,
         val adType: AdType,
         val placementName: String,
-        val lineItems: List<Config.LineItem>?
+        val lineItems: List<Config.LineItem>?,
+        val accountId: String,
+        val appKey: String
     )
 }
 

@@ -21,9 +21,7 @@ import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.model.ImpressionDataStore
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
-import io.cloudx.sdk.internal.imp_tracker.model.LocalData
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.AdEventApi
@@ -89,50 +87,32 @@ internal class InitializationServiceImpl(
                 if (geoDataResult is Result.Success) {
                     val headersMap = geoDataResult.value
 
-                    println("hop: headersMap (all response headers) = $headersMap")
-                    println("hop: cfg.geoHeaders = ${cfg.geoHeaders}")
-
                     val geoInfo: Map<String, String> = cfg.geoHeaders?.mapNotNull { header ->
                         val sourceHeader = header.source
                         val targetField = header.target
                         val value = headersMap[sourceHeader]
-                        println("hop: Mapping source='$sourceHeader' to target='$targetField', value='$value'")
-                        value?.let { targetField to it }
-                    }?.toMap() ?: emptyMap()
 
-                    println("hop: geoInfo (mapped) = $geoInfo")
+                        value?.let {
+                            targetField to it
+                        }
+                    }?.toMap() ?: emptyMap()
 
                     CloudXLogger.info("MainActivity", "geo data: $geoInfo")
                     GeoInfoHolder.setGeoInfo(geoInfo)
                 }
 
                 val factories = resolveAdapters(cfg)
-                initAdFactory(cfg, factories)
+
+                val appKeyOverride = cfg.appKeyOverride ?: appKey
+                initAdFactory(appKeyOverride, cfg, factories)
                 initializeAdapterNetworks(cfg, activity)
 
                 MatcherRegistry.registerMatchers()
 
-                val appInfo = provideAppInfo()
                 val deviceInfo = provideDeviceInfo()
-
                 val sdkVersion = BuildConfig.SDK_VERSION_NAME
                 val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
                 val sessionId = cfg.sessionId + UUID.randomUUID().toString()
-
-                ImpressionDataStore.saveLocalData(
-                    LocalData(
-                        releaseVersion = BuildConfig.SDK_VERSION_NAME,
-                        organizationId = cfg.organizationId ?: "",
-                        applicationId = appInfo.packageName,
-                        deviceName = deviceInfo.model,
-                        deviceType = if (deviceInfo.isTablet) "table" else "mobile",
-                        osName = "android",
-                        osVersion = deviceInfo.osVersion,
-                        sessionId = cfg.sessionId,
-                        testGroupName = ResolvedEndpoints.testGroupName,
-                        accountId = cfg.accountId ?: ""
-                    )
-                )
 
                 TrackingFieldResolver.setSessionConstData(sessionId, sdkVersion, deviceType, ResolvedEndpoints.testGroupName)
                 TrackingFieldResolver.setConfig(cfg)
@@ -151,6 +131,13 @@ internal class InitializationServiceImpl(
             configApiResult
         }
 
+    override fun deinitialize() {
+        ResolvedEndpoints.reset()
+        config = null
+        factories = null
+        adFactory = null
+    }
+
     private var factories: BidAdNetworkFactories? = null
     override var adFactory: AdFactory? = null
         private set
@@ -168,8 +155,9 @@ internal class InitializationServiceImpl(
             factories
         }
 
-    private fun initAdFactory(config: Config, factories: BidAdNetworkFactories) {
+    private fun initAdFactory(appKey: String, config: Config, factories: BidAdNetworkFactories) {
         adFactory = AdFactory(
+            appKey,
             config,
             factories,
             AdEventApi(config.eventTrackingEndpointUrl),

@@ -38,7 +38,9 @@ internal fun BidBannerSource(
     metricsTracker: MetricsTracker,
     miscParams: BannerFactoryMiscParams,
     bidRequestTimeoutMillis: Long,
-    lineItems: List<Config.LineItem>?
+    lineItems: List<Config.LineItem>?,
+    accountId: String,
+    appKey: String
 ): BidAdSource<SuspendableBanner> =
     BidAdSource(
         generateBidRequest,
@@ -46,7 +48,9 @@ internal fun BidBannerSource(
             adId = placementId,
             adType = placementType,
             placementName = placementName,
-            lineItems = lineItems
+            lineItems = lineItems,
+            accountId = accountId,
+            appKey = appKey
         ),
         requestBid,
         cdpApi,

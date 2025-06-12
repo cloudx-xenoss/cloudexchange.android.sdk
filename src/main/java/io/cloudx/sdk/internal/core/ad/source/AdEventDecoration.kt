@@ -11,9 +11,7 @@ import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendable
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableRewardedInterstitial
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.model.ImpressionDataStore
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
-import io.cloudx.sdk.internal.imp_tracker.model.encoded
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import kotlinx.coroutines.launch
 
@@ -154,10 +152,6 @@ internal fun bidAdDecoration(
         adEventApi(AdEventApi.EventType.Impression, bidId)
         val scope = GlobalScopes.IO
         scope.launch {
-            ImpressionDataStore.saveLoadedBid(auctionId, bidId)
-            val impressionId = ImpressionDataStore.buildImpressionId(auctionId)
-            val encodedOldVersion = impressionId?.encoded()
-
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 

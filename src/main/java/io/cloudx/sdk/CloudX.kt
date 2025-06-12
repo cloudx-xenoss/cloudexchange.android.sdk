@@ -361,6 +361,12 @@ object CloudX {
         SdkKeyValueState.clear()
     }
 
+    @JvmStatic
+    fun deinitialize() {
+        initializationService?.deinitialize()
+        initializationService = null
+    }
+
     /**
      * Initialization params
      *

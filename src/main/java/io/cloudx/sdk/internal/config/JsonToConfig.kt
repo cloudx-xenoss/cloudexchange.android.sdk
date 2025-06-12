@@ -34,6 +34,7 @@ internal suspend fun jsonToConfig(json: String): Result<Config, Error> =
                     sessionId = root.getString("sessionID") + UUID.randomUUID().toString(),
                     organizationId = root.optString("organizationID", null),
                     accountId = root.optString("accountID", null),
+                    appKeyOverride = root.optString("appKeyOverride", null),
                     trackers = root.optJSONArray("tracking")?.toTrackers(),
                     geoHeaders = root.optJSONArray("geoHeaders")?.toGeoHeaders(),
                     rawJson = root

@@ -59,6 +59,13 @@ internal class BidRequestProviderImpl(
                     put("id", "5646234")
                     put("bundle", bundleOverride.ifEmpty { appInfo.packageName })
                     put("ver", appInfo.appVersion)
+                    put("publisher", JSONObject().apply {
+                        put("ext", JSONObject().apply {
+                            put("prebid", JSONObject().apply {
+                                put("parentAccount", params.accountId)
+                            })
+                        })
+                    })
                 })
 
                 val deviceInfo = provideDeviceInfo()

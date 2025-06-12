@@ -43,6 +43,7 @@ internal interface AdFactory {
 }
 
 internal fun AdFactory(
+    appKey: String,
     config: Config,
     factories: BidAdNetworkFactories,
     adEventApi: AdEventApi,
@@ -53,6 +54,7 @@ internal fun AdFactory(
     activityLifecycleService: ActivityLifecycleService
 ): AdFactory =
     AdFactoryImpl(
+        appKey,
         config,
         factories,
         adEventApi,

@@ -8,14 +8,10 @@ import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.bid.BidApi
 import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.bid.BidResponse
-import io.cloudx.sdk.internal.bid.toBidRequestString
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.config.ResolvedEndpoints
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
-import io.cloudx.sdk.internal.imp_tracker.model.BidMetadata
-import io.cloudx.sdk.internal.imp_tracker.model.ImpressionDataStore
-import io.cloudx.sdk.internal.imp_tracker.model.RequestData
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
@@ -136,7 +132,7 @@ private class BidAdSourceImpl<T : Destroyable>(
 
         val result: Result<BidResponse, Error>
         val bidRequestLatencyMillis = measureTimeMillis {
-            result = requestBid.invoke(enrichedPayload)
+            result = requestBid.invoke(bidRequestParams.appKey, enrichedPayload)
         }
 
         return when (result) {
@@ -146,47 +142,18 @@ private class BidAdSourceImpl<T : Destroyable>(
             }
 
             is Result.Success -> {
-                val bidAdSourceResponse =
-                    result.value.toBidAdSourceResponse(bidRequestParams, createBidAd)
+                val bidAdSourceResponse = result.value.toBidAdSourceResponse(bidRequestParams, createBidAd)
+
                 if (bidAdSourceResponse.bidItemsByRank.isEmpty()) {
                     CloudXLogger.debug(logTag, "NO_BID")
                 } else {
-                    val bidDetails =
-                        bidAdSourceResponse.bidItemsByRank.joinToString(separator = ",\n") {
+                    val bidDetails = bidAdSourceResponse.bidItemsByRank.joinToString(separator = ",\n") {
                             "\"bidder\": \"${it.adNetworkOriginal}\", cpm: ${it.priceRaw}, rank: ${it.rank}"
                         }
                     CloudXLogger.debug(
                         logTag,
                         "Bid Success — received ${bidAdSourceResponse.bidItemsByRank.size} bid(s): [$bidDetails]"
                     )
-
-                    val device = bidRequestParamsJson.optJSONObject("device")
-                    val ifa = device?.optString("ifa").orEmpty()
-
-                    ImpressionDataStore.saveRequestData(
-                        result.value.auctionId, RequestData(
-                            auctionId = result.value.auctionId,
-                            placementId = bidRequestParams.adId,
-                            ifa = ifa,
-                            loopIndex = PlacementLoopIndexTracker.getCount(bidRequestParams.placementName),
-                        )
-                    )
-
-
-                    ImpressionDataStore.saveResponseData(
-                        result.value.auctionId,
-                        result.value.seatBid.flatMap { it.bid }.map {
-                            BidMetadata(
-                                bidId = it.id,
-                                bidder = it.adNetwork.toBidRequestString(),
-                                priceMicros = it.priceRaw ?: "null",
-                                responseTimeMillis = bidRequestLatencyMillis.toInt(),
-                                width = it.adWidth ?: 320,
-                                height = it.adHeight ?: 50,
-                                dealId = it.dealId ?: "dealId_absent_from_bid",
-                                creativeId = it.creativeId ?: "creativeId_absent_from_bid"
-                            )
-                        })
 
                     TrackingFieldResolver.setSdkParam(
                         result.value.auctionId,
@@ -211,7 +178,7 @@ private class BidAdSourceImpl<T : Destroyable>(
     }
 }
 
-private suspend fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
+private fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
     bidRequestParams: BidRequestProvider.Params,
     createBidAd: suspend (CreateBidAdParams) -> T,
 ): BidAdSourceResponse<T> {

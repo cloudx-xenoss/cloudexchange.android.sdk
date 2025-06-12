@@ -20,7 +20,7 @@ internal object ResolvedEndpoints {
 
     fun resolveFrom(config: Config, random: Random = Random) {
         // geoApi - No AB test
-        geoEndpoint = config.geoDataEndpointURL
+        geoEndpoint = config.geoDataEndpointURL ?: ""
 
         // AB test configs
         CloudXLogger.debug("Endpoints", "================")
@@ -42,12 +42,12 @@ internal object ResolvedEndpoints {
             return
         }
 
-        val totalRatio = tests.sumOf { it.testVariant.ratio }
-        if (totalRatio != 1.0) {
-            CloudXLogger.debug("Endpoints", "Error: Total ratio ($totalRatio) must equal 1.0")
-            assignDefaults(config)
-            return
-        }
+//        val totalRatio = tests.sumOf { it.testVariant.ratio }
+//        if (totalRatio != 1.0) {
+//            CloudXLogger.debug("Endpoints", "Error: Total ratio ($totalRatio) must equal 1.0")
+//            assignDefaults(config)
+//            return
+//        }
 
         var cumulativeRatio = 0.0
         var selectedTest: TestCase? = null
@@ -76,6 +76,12 @@ internal object ResolvedEndpoints {
         }
 
         logEndpoints()
+    }
+
+    fun reset() {
+        auctionEndpoint = ""
+        cdpEndpoint = ""
+        geoEndpoint = ""
     }
 
     private fun assignDefaults(config: Config) {

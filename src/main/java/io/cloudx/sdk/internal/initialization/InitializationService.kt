@@ -12,7 +12,6 @@ import io.cloudx.sdk.internal.core.resolver.AdapterFactoryResolver
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -37,6 +36,8 @@ internal interface InitializationService {
      * Ad factory - null when SDK is not [initialized]
      */
     val adFactory: AdFactory?
+
+    fun deinitialize()
 }
 
 internal fun InitializationService(
