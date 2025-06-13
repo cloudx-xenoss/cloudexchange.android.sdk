@@ -11,36 +11,36 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 
-internal class ImpressionTrackingApiImpl(
+internal class EventTrackingApiImpl(
     private val timeoutMillis: Long,
     private val httpClient: HttpClient,
-) : ImpressionTrackingApi {
+) : EventTrackingApi {
 
-    private val tag = "ImpressionTrackingApi"
+    private val tag = "EventTrackingApi"
 
     override suspend fun send(
         endpointUrl: String,
-        impressionEncoded: String,
+        encodedData: String,
         campaignId: String,
         eventValue: Int,
         eventName: String
     ): Result<Unit, Error> {
 
         Logger.d(tag, buildString {
-            appendLine("Sending impression tracking request:")
+            appendLine("Sending event tracking  request:")
             appendLine("  Endpoint: $endpointUrl")
-            appendLine("  Impression: $impressionEncoded")
+            appendLine("  Impression: $encodedData")
             appendLine("  CampaignId: $campaignId")
             appendLine("  EventValue: $eventValue")
             appendLine("  EventName: $eventName")
         })
 
-        CloudXLogger.info("MainActivity", "Sent Impression Tracking Data")
+        CloudXLogger.info("MainActivity", "Tracking: Sent $eventName event")
 
         return try {
             val response = httpClient.get(endpointUrl) {
                 timeout { requestTimeoutMillis = timeoutMillis }
-                parameter("impression", impressionEncoded)
+                parameter("impression", encodedData)
                 parameter("campaignId", campaignId)
                 parameter("eventValue", "1")
                 parameter("eventName", eventName)

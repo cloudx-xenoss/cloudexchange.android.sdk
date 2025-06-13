@@ -10,8 +10,8 @@ import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.bid.BidResponse
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.config.ResolvedEndpoints
-import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
-import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
+import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
+import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker

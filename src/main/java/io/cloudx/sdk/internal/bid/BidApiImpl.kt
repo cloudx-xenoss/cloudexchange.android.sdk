@@ -3,7 +3,7 @@ package io.cloudx.sdk.internal.bid
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.Logger
-import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
+import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.requestTimeoutMillis
 import io.ktor.client.HttpClient
 import io.ktor.client.request.headers

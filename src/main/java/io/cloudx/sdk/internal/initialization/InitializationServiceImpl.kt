@@ -21,7 +21,7 @@ import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
-import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
+import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.AdEventApi

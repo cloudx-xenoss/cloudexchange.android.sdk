@@ -26,41 +26,35 @@ internal class EventTrackerImpl(
     }
 
     override fun send(
-        encoded: String,
-        campaignId: String,
-        eventValue: Int,
-        eventName: String
+        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
     ) {
-        // fire-and-forget
         scope.launch {
-            trackEvent(encoded, campaignId, eventValue, eventName)
+            trackEvent(encoded, campaignId, eventValue, eventType)
         }
     }
 
     private suspend fun trackEvent(
-        encoded: String,
-        campaignId: String,
-        eventValue: Int,
-        eventName: String
+        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
     ) {
-        val endpoint = endpointFor(eventName)
-        val label = eventName.replaceFirstChar { it.uppercase() }
+        val endpoint = when (eventType) {
+            EventType.Click -> clickEndpoint
+            EventType.Impression -> impressionEndpoint
+        }
 
-        if (endpoint == null) {
-            Logger.e(tag, "No endpoint configured for event='$eventName', caching")
-            saveToDb(encoded, campaignId, eventValue, eventName)
+        if (endpoint.isNullOrBlank()) {
+            Logger.e(tag, "No endpoint for $eventType, caching event")
+            saveToDb(encoded, campaignId, eventValue, eventType)
             return
         }
 
-        when (val result = trackingApi.send(endpoint, encoded, campaignId, eventValue, eventName)) {
-            is io.cloudx.sdk.Result.Success -> {
-                Logger.d(tag, "$label sent successfully.")
-            }
-
-            else -> {
-                Logger.e(tag, "$label failed to send. Caching for retry later.")
-                saveToDb(encoded, campaignId, eventValue, eventName)
-            }
+        val result = trackingApi.send(
+            endpoint, encoded, campaignId, eventValue, eventType.code
+        )
+        if (result is io.cloudx.sdk.Result.Success) {
+            Logger.d(tag, "$eventType sent successfully.")
+        } else {
+            Logger.e(tag, "$eventType failed to send. Caching for retry later.")
+            saveToDb(encoded, campaignId, eventValue, eventType)
         }
     }
 
@@ -71,53 +65,39 @@ internal class EventTrackerImpl(
                 Logger.d(tag, "No pending tracking events to send")
                 return@launch
             }
-
-            Logger.d(tag, "Found ${cached.size} pending tracking events to retry")
-
-            // sequential retries; you can swap to parallel if desired
-            cached.forEach { entry ->
-                retryEntry(entry)
-            }
+            Logger.d(tag, "Found ${cached.size} pending events to retry")
+            cached.forEach { retryEntry(it) }
         }
     }
 
     private suspend fun retryEntry(entry: CachedTrackingEvents) {
-        val endpoint = endpointFor(entry.eventName)
-        if (endpoint == null) {
-            Logger.e(tag, "No endpoint for '${entry.eventName}', skipping ${entry.id}")
-            return
-        }
-
-        when (val result = trackingApi.send(
-            endpoint,
-            entry.encoded,
-            entry.campaignId,
-            entry.eventValue,
-            entry.eventName
-        )) {
-            is io.cloudx.sdk.Result.Success -> {
-                Logger.d(tag, "Successfully resent cached event: ${entry.id}")
+        EventType.from(entry.eventName)?.let { eventType ->
+            val endpoint = when (eventType) {
+                EventType.Click -> clickEndpoint
+                EventType.Impression -> impressionEndpoint
+            }
+            Logger.d(tag, "retryEntry: $eventType → endpoint=$endpoint for id=${entry.id}")
+            if (endpoint.isNullOrBlank()) {
+                Logger.e(tag, "No endpoint for $eventType, skipping ${entry.id}")
+                return
+            }
+            val result = trackingApi.send(
+                endpoint, entry.encoded, entry.campaignId, entry.eventValue, eventType.code
+            )
+            if (result is io.cloudx.sdk.Result.Success) {
+                Logger.d(tag, "Resend success for ${entry.id}")
                 db.cachedTrackingEventDao().delete(entry.id)
+            } else {
+                Logger.e(tag, "Resend failed for ${entry.id}, keeping for later")
             }
-
-            else -> {
-                Logger.e(tag, "Retry failed for cached event: ${entry.id}, will keep for later")
-            }
+        } ?: run {
+            Logger.e(tag, "Unknown eventName='${entry.eventName}', deleting ${entry.id}")
+            db.cachedTrackingEventDao().delete(entry.id)
         }
     }
 
-    private fun endpointFor(eventName: String): String? =
-        when (eventName) {
-            "click" -> clickEndpoint
-            "imp" -> impressionEndpoint
-            else -> null
-        }
-
     private suspend fun saveToDb(
-        encoded: String,
-        campaignId: String,
-        eventValue: Int,
-        eventName: String
+        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
     ) {
         db.cachedTrackingEventDao().insert(
             CachedTrackingEvents(
@@ -125,7 +105,7 @@ internal class EventTrackerImpl(
                 encoded = encoded,
                 campaignId = campaignId,
                 eventValue = eventValue,
-                eventName = eventName
+                eventName = eventType.code
             )
         )
     }

@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.imp_tracker.dynamic
+package io.cloudx.sdk.internal.imp_tracker
 
 import android.util.Base64
 import io.cloudx.sdk.internal.config.Config
@@ -30,8 +30,8 @@ internal object TrackingFieldResolver {
     private var abTestGroup: String? = null
 
     fun setConfig(config: Config) {
-        this.tracking = config.trackers
-        this.configDataMap = config.rawJson
+        tracking = config.trackers
+        configDataMap = config.rawJson
     }
 
     fun setSessionConstData(
@@ -40,10 +40,10 @@ internal object TrackingFieldResolver {
         deviceType: String,
         abTestGroup: String
     ) {
-        this.sessionId = sessionId
-        this.sdkVersion = sdkVersion
-        this.deviceType = deviceType
-        this.abTestGroup = abTestGroup
+        TrackingFieldResolver.sessionId = sessionId
+        TrackingFieldResolver.sdkVersion = sdkVersion
+        TrackingFieldResolver.deviceType = deviceType
+        TrackingFieldResolver.abTestGroup = abTestGroup
     }
 
     fun setRequestData(auctionId: String, json: JSONObject) {
@@ -75,7 +75,6 @@ internal object TrackingFieldResolver {
         }
 
         val rawString = values.joinToString(";")
-        println("hop: NEW: Raw: $rawString")
         return Base64.encodeToString(rawString.toByteArray(), Base64.NO_WRAP)
     }
 

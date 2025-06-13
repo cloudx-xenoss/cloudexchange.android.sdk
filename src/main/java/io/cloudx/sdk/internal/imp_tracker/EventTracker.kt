@@ -14,7 +14,7 @@ internal interface EventTracker {
         encoded: String,
         campaignId: String,
         eventValue: Int,
-        eventName: String
+        eventType: EventType
     )
 }
 

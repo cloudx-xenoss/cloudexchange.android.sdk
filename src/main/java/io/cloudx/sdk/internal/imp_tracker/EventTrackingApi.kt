@@ -7,7 +7,7 @@ import io.ktor.client.HttpClient
 /**
  * Impression tracking API to notify backend when a winning ad was rendered.
  */
-internal fun interface ImpressionTrackingApi {
+internal fun interface EventTrackingApi {
 
     /**
      * Sends a tracking request with encoded impression ID and metadata.
@@ -18,7 +18,7 @@ internal fun interface ImpressionTrackingApi {
      */
     suspend fun send(
         endpointUrl: String,
-        impressionEncoded: String,
+        encodedData: String,
         campaignId: String,
         eventValue: Int,
         eventName: String
@@ -28,7 +28,7 @@ internal fun interface ImpressionTrackingApi {
 internal fun TrackingApi(
     timeoutMillis: Long = 10_000,
     httpClient: HttpClient = io.cloudx.sdk.internal.httpclient.CloudXHttpClient(),
-): ImpressionTrackingApi = ImpressionTrackingApiImpl(
+): EventTrackingApi = EventTrackingApiImpl(
     timeoutMillis = timeoutMillis,
     httpClient = httpClient
 )

@@ -11,7 +11,8 @@ import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendable
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableRewardedInterstitial
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
-import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
+import io.cloudx.sdk.internal.imp_tracker.EventType
+import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import kotlinx.coroutines.launch
 
@@ -157,7 +158,7 @@ internal fun bidAdDecoration(
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 
             encodedNewVersion?.let {
-                eventTracker.send(it, "c1", 1, "imp")
+                eventTracker.send(it, "c1", 1, EventType.Impression)
             }
         }
     },
@@ -168,7 +169,7 @@ internal fun bidAdDecoration(
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 
             encodedNewVersion?.let {
-                eventTracker.send(it, "c1", 1, "click")
+                eventTracker.send(it, "c1", 1, EventType.Click)
             }
         }
     }
