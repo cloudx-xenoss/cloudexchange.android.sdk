@@ -3,8 +3,8 @@ package io.cloudx.sdk.internal.db.imp_tracking
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "impression_cache_table")
-data class CachedImpression(
+@Entity(tableName = "cached_tracking_events_table")
+data class CachedTrackingEvents(
     @PrimaryKey val id: String, // e.g. auctionId or UUID
     val encoded: String,
     val campaignId: String,

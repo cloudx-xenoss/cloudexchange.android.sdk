@@ -4,8 +4,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import io.cloudx.sdk.internal.ApplicationContext
-import io.cloudx.sdk.internal.db.imp_tracking.CachedImpression
-import io.cloudx.sdk.internal.db.imp_tracking.CachedImpressionDao
+import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEvents
+import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEventDao
 import io.cloudx.sdk.internal.db.tracking.InitOperationStatus
 import io.cloudx.sdk.internal.db.tracking.InitOperationStatusDao
 import io.cloudx.sdk.internal.db.tracking.MetricDao
@@ -21,9 +21,9 @@ import io.cloudx.sdk.internal.db.tracking.SpendMetric
         SpendMetric::class,
         Placement::class,
         InitOperationStatus::class,
-        CachedImpression::class
+        CachedTrackingEvents::class
     ],
-    version = 5,
+    version = 6,
     // Not yet.
     exportSchema = false
 )
@@ -34,7 +34,7 @@ internal abstract class CloudXDb : RoomDatabase() {
     abstract fun placementDao(): PlacementDao
 
     abstract fun initOperationStatusDao(): InitOperationStatusDao
-    abstract fun cachedImpressionDao(): CachedImpressionDao
+    abstract fun cachedTrackingEventDao(): CachedTrackingEventDao
 }
 
 internal fun Database(): CloudXDb = LazySingleInstance

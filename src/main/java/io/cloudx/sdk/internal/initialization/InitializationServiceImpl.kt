@@ -20,7 +20,7 @@ import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
@@ -43,11 +43,11 @@ internal class InitializationServiceImpl(
     private val adapterResolver: AdapterFactoryResolver,
     private val privacyService: PrivacyService,
     private val metricsTracker: MetricsTracker,
-    private val impressionTracker: ImpressionTracker,
+    private val eventTracker: EventTracker,
     private val provideAppInfo: AppInfoProvider,
     private val provideDeviceInfo: DeviceInfoProvider,
     private val geoApi: GeoApi
-    ) : InitializationService {
+) : InitializationService {
 
     override val initialized: Boolean
         get() = config != null
@@ -76,8 +76,8 @@ internal class InitializationServiceImpl(
                 val cfg = configApiResult.value
                 this.config = cfg
 
-                impressionTracker.setEndpoint(cfg.impressionTrackerURL)
-                impressionTracker.trySendingPendingImpressions()
+                eventTracker.setEndpoints(cfg.impressionTrackerURL, cfg.clickTrackerURL)
+                eventTracker.trySendingPendingTrackingEvents()
 
                 ResolvedEndpoints.resolveFrom(cfg)
 
@@ -114,7 +114,12 @@ internal class InitializationServiceImpl(
                 val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
                 val sessionId = cfg.sessionId + UUID.randomUUID().toString()
 
-                TrackingFieldResolver.setSessionConstData(sessionId, sdkVersion, deviceType, ResolvedEndpoints.testGroupName)
+                TrackingFieldResolver.setSessionConstData(
+                    sessionId,
+                    sdkVersion,
+                    deviceType,
+                    ResolvedEndpoints.testGroupName
+                )
                 TrackingFieldResolver.setConfig(cfg)
             }
 
@@ -162,7 +167,7 @@ internal class InitializationServiceImpl(
             factories,
             AdEventApi(config.eventTrackingEndpointUrl),
             metricsTracker,
-            impressionTracker,
+            eventTracker,
             ConnectionStatusService(),
             AppLifecycleService(),
             ActivityLifecycleService()

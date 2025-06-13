@@ -13,8 +13,7 @@ import io.cloudx.sdk.internal.common.service.AppLifecycleService
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -48,7 +47,7 @@ internal fun AdFactory(
     factories: BidAdNetworkFactories,
     adEventApi: AdEventApi,
     metricsTracker: MetricsTracker,
-    impressionTracker: ImpressionTracker,
+    eventTracker: EventTracker,
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     activityLifecycleService: ActivityLifecycleService
@@ -59,7 +58,7 @@ internal fun AdFactory(
         factories,
         adEventApi,
         metricsTracker,
-        impressionTracker,
+        eventTracker,
         connectionStatusService,
         appLifecycleService,
         activityLifecycleService

@@ -27,6 +27,7 @@ internal suspend fun jsonToConfig(json: String): Result<Config, Error> =
                     cdpEndpointUrl = cdpEndpoint,
                     eventTrackingEndpointUrl = root.getString("eventTrackingURL"),
                     impressionTrackerURL = root.optString("impressionTrackerURL", null),
+                    clickTrackerURL = root.optString("clickTrackerURL", null),
                     bidders = root.getJSONArray("bidders").toBidders(),
                     placements = root.getJSONArray("placements").toPlacements(),
                     metricsEndpointUrl = root.getString("metricsEndpointURL"),

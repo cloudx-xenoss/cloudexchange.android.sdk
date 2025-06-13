@@ -5,7 +5,7 @@ import io.cloudx.sdk.RoboMockkTest
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import io.cloudx.sdk.mocks.MockConfigAPIWithPredefinedConfig
@@ -29,7 +29,7 @@ class InitializationServiceImplTest : RoboMockkTest() {
             metricsTracker = MetricsTracker(),
             provideAppInfo = AppInfoProvider(),
             provideDeviceInfo = DeviceInfoProvider(),
-            impressionTracker = ImpressionTracker(),
+            eventTracker = EventTracker(),
             geoApi = GeoApi()
         )
 

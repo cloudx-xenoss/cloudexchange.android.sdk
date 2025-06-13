@@ -13,7 +13,7 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.ad.source.bid.*
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableInterstitialEvent
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -34,7 +34,7 @@ internal fun Interstitial(
     bidApi: BidApi,
     cdpApi: CdpApi,
     adEventApi: AdEventApi,
-    impressionTracker: ImpressionTracker,
+    eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
@@ -59,7 +59,7 @@ internal fun Interstitial(
             cdpApi,
             bidRequestProvider,
             adEventApi,
-            impressionTracker,
+            eventTracker,
             metricsTracker,
             0,
             lineItems,

@@ -2,12 +2,7 @@ package io.cloudx.sdk.internal.geo
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
-import io.cloudx.sdk.internal.GlobalScopes
-import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
-import io.cloudx.sdk.internal.config.Config
-import io.cloudx.sdk.internal.db.Database
 import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackerImpl
 import io.ktor.client.HttpClient
 
 /**

@@ -25,7 +25,7 @@ internal fun interface ImpressionTrackingApi {
     ): Result<Unit, Error>
 }
 
-internal fun ImpressionTrackingApi(
+internal fun TrackingApi(
     timeoutMillis: Long = 10_000,
     httpClient: HttpClient = io.cloudx.sdk.internal.httpclient.CloudXHttpClient(),
 ): ImpressionTrackingApi = ImpressionTrackingApiImpl(

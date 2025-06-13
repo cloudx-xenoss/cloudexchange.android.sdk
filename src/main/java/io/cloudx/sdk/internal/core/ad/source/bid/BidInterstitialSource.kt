@@ -15,8 +15,7 @@ import io.cloudx.sdk.internal.core.ad.source.bidAdDecoration
 import io.cloudx.sdk.internal.core.ad.source.decorate
 import io.cloudx.sdk.internal.core.ad.source.metricsTrackerDecoration
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableInterstitial
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTrackingApi
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -29,7 +28,7 @@ internal fun BidInterstitialSource(
     cdpApi: CdpApi,
     generateBidRequest: BidRequestProvider,
     adEventApi: AdEventApi,
-    impressionTracker: ImpressionTracker,
+    eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
     bidRequestTimeoutMillis: Long,
     lineItems: List<Config.LineItem>?,
@@ -79,7 +78,7 @@ internal fun BidInterstitialSource(
         }.decorate(
             baseAdDecoration() +
                     metricsTrackerDecoration(placementId, price, metricsTracker) +
-                    bidAdDecoration(bidId, auctionId, adEventApi, impressionTracker) +
+                    bidAdDecoration(bidId, auctionId, adEventApi, eventTracker) +
                     adapterLoggingDecoration(
                         adUnitId = adId,
                         adNetwork = adNetwork,

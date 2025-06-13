@@ -4,11 +4,11 @@ import io.cloudx.sdk.internal.GlobalScopes
 import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.db.Database
 
-internal interface ImpressionTracker {
+internal interface EventTracker {
 
-    fun trySendingPendingImpressions()
+    fun trySendingPendingTrackingEvents()
 
-    fun setEndpoint(endpoint: String?)
+    fun setEndpoints(impressionEndpoint: String?, clickEndpoint: String?)
 
     fun send(
         encoded: String,
@@ -18,10 +18,10 @@ internal interface ImpressionTracker {
     )
 }
 
-internal fun ImpressionTracker(): ImpressionTracker = LazySingleInstance
+internal fun EventTracker(): EventTracker = LazySingleInstance
 
 private val LazySingleInstance by lazy {
-    ImpressionTrackerImpl(
+    EventTrackerImpl(
         GlobalScopes.IO,
         AppForegroundDurationService(),
         Database()

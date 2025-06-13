@@ -10,7 +10,7 @@ import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableRewardedInterstitia
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableBanner
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendableRewardedInterstitial
-import io.cloudx.sdk.internal.imp_tracker.ImpressionTracker
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.dynamic.TrackingFieldResolver
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import kotlinx.coroutines.launch
@@ -143,20 +143,32 @@ internal fun bidAdDecoration(
     bidId: String,
     auctionId: String,
     adEventApi: AdEventApi,
-    impressionTracker: ImpressionTracker,
+    eventTracker: EventTracker,
 ) = AdEventDecoration(
     onLoad = {
         adEventApi(AdEventApi.EventType.Win, bidId)
     },
     onImpression = {
         adEventApi(AdEventApi.EventType.Impression, bidId)
+
         val scope = GlobalScopes.IO
         scope.launch {
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 
             encodedNewVersion?.let {
-                impressionTracker.send(it, "c1", 1, "imp")
+                eventTracker.send(it, "c1", 1, "imp")
+            }
+        }
+    },
+    onClick = {
+        val scope = GlobalScopes.IO
+        scope.launch {
+            TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
+            val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
+
+            encodedNewVersion?.let {
+                eventTracker.send(it, "c1", 1, "click")
             }
         }
     }

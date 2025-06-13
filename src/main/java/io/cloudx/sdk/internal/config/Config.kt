@@ -18,6 +18,7 @@ internal class Config(
     val cdpEndpointUrl: EndpointConfig,
     val eventTrackingEndpointUrl: String,
     val impressionTrackerURL: String?,
+    val clickTrackerURL: String?,
     val metricsEndpointUrl: String,
     val geoDataEndpointURL: String?,
     val organizationId: String?,

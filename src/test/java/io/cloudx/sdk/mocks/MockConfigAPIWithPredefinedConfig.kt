@@ -26,6 +26,7 @@ internal class MockConfigAPIWithPredefinedConfig : ConfigApi {
                 bidderName to Config.Bidder(bidderName, emptyMap())
             }),
             impressionTrackerURL = "nopoint",
+            clickTrackerURL = "nopoint",
             organizationId = "",
             accountId = "",
             geoDataEndpointURL = "nopoint",
