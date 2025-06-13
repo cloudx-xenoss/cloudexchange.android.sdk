@@ -53,3 +53,7 @@ Integrate additional adapters as needed for your ad mediation:
 - [Meta Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-meta)
 
 > Visit each link for setup guides and available versions.
+
+## License
+
+This software is licensed under the Elastic License 2.0. See the [LICENSE](./LICENSE) file for details.
