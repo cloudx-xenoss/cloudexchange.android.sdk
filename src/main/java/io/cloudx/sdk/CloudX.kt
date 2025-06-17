@@ -116,7 +116,7 @@ object CloudX {
                 )
 
                 is Result.Success -> CloudXInitializationStatus(
-                    initialized = true, "CloudX SDK is initialized"
+                    initialized = true, "CloudX SDK is initialized v${BuildConfig.SDK_VERSION_NAME}"
                 )
             }
 
