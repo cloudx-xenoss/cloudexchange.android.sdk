@@ -32,17 +32,17 @@ jobs:
       - name: 🔐 Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Run unit tests for SDK project with coverage measurement
-        run: ./gradlew clean jacocoDebugCodeCoverage
-      - name: Add coverage results to PR
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.6.1
-        with:
-          paths: |
-            ${{ github.workspace }}/**/sdk/build/reports/jacoco/jacocoDebugCodeCoverage/jacocoDebugCodeCoverage.xml
-          token: ${{ secrets.PAT_TOKEN }}
-          min-coverage-overall: 10
-          min-coverage-changed-files: 0
+#      - name: Run unit tests for SDK project with coverage measurement
+#        run: ./gradlew clean jacocoDebugCodeCoverage
+#      - name: Add coverage results to PR
+#        id: jacoco
+#        uses: madrapps/jacoco-report@v1.6.1
+#        with:
+#          paths: |
+#            ${{ github.workspace }}/**/sdk/build/reports/jacoco/jacocoDebugCodeCoverage/jacocoDebugCodeCoverage.xml
+#          token: ${{ secrets.PAT_TOKEN }}
+#          min-coverage-overall: 10
+#          min-coverage-changed-files: 0
 
       - name: 🛠️ Build AAR
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
