@@ -25,11 +25,10 @@ internal class MockConfigAPIWithPredefinedConfig : ConfigApi {
             bidders = mapOf(AdNetwork.TestNetwork.let { bidderName ->
                 bidderName to Config.Bidder(bidderName, emptyMap())
             }),
-            impressionTrackerURL = "nopoint",
-            clickTrackerURL = "nopoint",
+            trackingEndpointUrl = "nopoint",
             organizationId = "",
             accountId = "",
-            geoDataEndpointURL = "nopoint",
+            geoDataEndpointUrl = "nopoint",
             geoHeaders = emptyList(),
             trackers = emptyList(),
             appKeyOverride = "",

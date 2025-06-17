@@ -8,7 +8,7 @@ internal interface EventTracker {
 
     fun trySendingPendingTrackingEvents()
 
-    fun setEndpoints(impressionEndpoint: String?, clickEndpoint: String?)
+    fun setEndpoint(endpointUrl: String?)
 
     fun send(
         encoded: String,

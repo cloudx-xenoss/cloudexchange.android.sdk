@@ -21,7 +21,7 @@ internal fun interface EventTrackingApi {
         encodedData: String,
         campaignId: String,
         eventValue: Int,
-        eventName: String
+        eventName: String,
     ): Result<Unit, Error>
 }
 

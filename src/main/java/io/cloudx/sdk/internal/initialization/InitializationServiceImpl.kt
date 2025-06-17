@@ -76,7 +76,7 @@ internal class InitializationServiceImpl(
                 val cfg = configApiResult.value
                 this.config = cfg
 
-                eventTracker.setEndpoints(cfg.impressionTrackerURL, cfg.clickTrackerURL)
+                eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
 
                 ResolvedEndpoints.resolveFrom(cfg)

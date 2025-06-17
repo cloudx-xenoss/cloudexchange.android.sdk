@@ -20,7 +20,7 @@ internal object ResolvedEndpoints {
 
     fun resolveFrom(config: Config, random: Random = Random) {
         // geoApi - No AB test
-        geoEndpoint = config.geoDataEndpointURL ?: ""
+        geoEndpoint = config.geoDataEndpointUrl ?: ""
 
         // AB test configs
         CloudXLogger.debug("Endpoints", "================")

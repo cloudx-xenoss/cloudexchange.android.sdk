@@ -15,14 +15,12 @@ internal class EventTrackerImpl(
 ) : EventTracker {
 
     private val tag = "EventTracker"
-    private var impressionEndpoint: String? = null
-    private var clickEndpoint: String? = null
+    private var baseEndpoint: String? = null
 
     private val trackingApi = TrackingApi()
 
-    override fun setEndpoints(impressionEndpoint: String?, clickEndpoint: String?) {
-        this.impressionEndpoint = impressionEndpoint
-        this.clickEndpoint = clickEndpoint
+    override fun setEndpoint(endpointUrl: String?) {
+        this.baseEndpoint = endpointUrl
     }
 
     override fun send(
@@ -36,19 +34,18 @@ internal class EventTrackerImpl(
     private suspend fun trackEvent(
         encoded: String, campaignId: String, eventValue: Int, eventType: EventType
     ) {
-        val endpoint = when (eventType) {
-            EventType.Click -> clickEndpoint
-            EventType.Impression -> impressionEndpoint
-        }
 
-        if (endpoint.isNullOrBlank()) {
+        val endpointUrl = baseEndpoint
+
+        if (endpointUrl.isNullOrBlank()) {
             Logger.e(tag, "No endpoint for $eventType, caching event")
             saveToDb(encoded, campaignId, eventValue, eventType)
             return
         }
 
+        val finalUrl = endpointUrl.plus("/${eventType.pathSegment}")
         val result = trackingApi.send(
-            endpoint, encoded, campaignId, eventValue, eventType.code
+            finalUrl, encoded, campaignId, eventValue, eventType.code
         )
         if (result is io.cloudx.sdk.Result.Success) {
             Logger.d(tag, "$eventType sent successfully.")
@@ -72,17 +69,16 @@ internal class EventTrackerImpl(
 
     private suspend fun retryEntry(entry: CachedTrackingEvents) {
         EventType.from(entry.eventName)?.let { eventType ->
-            val endpoint = when (eventType) {
-                EventType.Click -> clickEndpoint
-                EventType.Impression -> impressionEndpoint
-            }
-            Logger.d(tag, "retryEntry: $eventType → endpoint=$endpoint for id=${entry.id}")
-            if (endpoint.isNullOrBlank()) {
+            val endpointUrl = baseEndpoint
+
+            Logger.d(tag, "retryEntry: $eventType → endpoint=$baseEndpoint for id=${entry.id}")
+            if (endpointUrl.isNullOrBlank()) {
                 Logger.e(tag, "No endpoint for $eventType, skipping ${entry.id}")
                 return
             }
+            val finalUrl = endpointUrl.plus("/${eventType.pathSegment}")
             val result = trackingApi.send(
-                endpoint, entry.encoded, entry.campaignId, entry.eventValue, eventType.code
+                finalUrl, entry.encoded, entry.campaignId, entry.eventValue, eventType.code
             )
             if (result is io.cloudx.sdk.Result.Success) {
                 Logger.d(tag, "Resend success for ${entry.id}")
