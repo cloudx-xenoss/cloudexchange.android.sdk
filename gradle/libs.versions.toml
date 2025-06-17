@@ -1,5 +1,5 @@
 [versions]
-sdkVersionName = "0.0.1.12"
+sdkVersionName = "0.0.1.13"
 mavenGroupId = "io.cloudx"
 sdkPackageName = "io.cloudx.sdk"
 adapterPackageName = "io.cloudx.adapter"
