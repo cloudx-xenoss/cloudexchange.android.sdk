@@ -39,7 +39,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudxchange.android.sdk.internal")
+            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudxchange.android.sdk")
             credentials {
                 username = System.getenv("PAT_USERNAME")
                 password = System.getenv("PAT_TOKEN")
