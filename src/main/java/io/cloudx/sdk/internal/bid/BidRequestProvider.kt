@@ -25,7 +25,7 @@ import org.json.JSONObject
 // TODO. Separate Json conversion logic from business logic.
 internal interface BidRequestProvider {
 
-    suspend fun invoke(params: Params): JSONObject
+    suspend fun invoke(params: Params, auctionId: String): JSONObject
 
     class Params(
         val adId: String,

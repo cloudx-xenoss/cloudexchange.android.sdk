@@ -49,6 +49,7 @@ internal fun BidRewardedInterstitialSource(
         ),
         requestBid,
         cdpApi,
+        eventTracker,
         metricsTracker
     ) {
 

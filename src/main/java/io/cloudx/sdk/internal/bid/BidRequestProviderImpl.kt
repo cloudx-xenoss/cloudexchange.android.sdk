@@ -44,11 +44,11 @@ internal class BidRequestProviderImpl(
     private val bidRequestExtrasProviders: Map<AdNetwork, BidRequestExtrasProvider>
 ) : BidRequestProvider {
 
-    override suspend fun invoke(params: BidRequestProvider.Params): JSONObject =
+    override suspend fun invoke(params: BidRequestProvider.Params, auctionId: String): JSONObject =
         withContext(Dispatchers.IO) {
             JSONObject().apply {
 
-                put("id", UUID.randomUUID().toString())
+                put("id", auctionId)
 
                 // These lines are for demo/test purposes
                 val bundleOverride = SdkEnvironment.overridesProvider?.getBundleOverride() ?: ""

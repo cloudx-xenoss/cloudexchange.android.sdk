@@ -10,12 +10,16 @@ import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.bid.BidResponse
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.config.ResolvedEndpoints
+import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.EventTrackingApi
+import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import org.json.JSONObject
+import java.util.UUID
 import kotlin.system.measureTimeMillis
 
 internal interface BidAdSource<T : Destroyable> {
@@ -45,6 +49,7 @@ internal fun <T : Destroyable> BidAdSource(
     bidRequestParams: BidRequestProvider.Params,
     requestBid: BidApi,
     cdpApi: CdpApi,
+    eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
     createBidAd: suspend (CreateBidAdParams) -> T,
 ): BidAdSource<T> =
@@ -53,6 +58,7 @@ internal fun <T : Destroyable> BidAdSource(
         bidRequestParams,
         requestBid,
         cdpApi,
+        eventTracker,
         metricsTracker,
         createBidAd
     )
@@ -74,6 +80,7 @@ private class BidAdSourceImpl<T : Destroyable>(
     private val bidRequestParams: BidRequestProvider.Params,
     private val requestBid: BidApi,
     private val cdpApi: CdpApi,
+    private val eventTracking: EventTracker,
     private val metricsTracker: MetricsTracker,
     private val createBidAd: suspend (CreateBidAdParams) -> T,
 ) : BidAdSource<T> {
@@ -81,7 +88,8 @@ private class BidAdSourceImpl<T : Destroyable>(
     private val logTag = "BidAdSourceImpl"
 
     override suspend fun requestBid(): BidAdSourceResponse<T>? {
-        val bidRequestParamsJson = provideBidRequest.invoke(bidRequestParams)
+        val auctionId = UUID.randomUUID().toString()
+        val bidRequestParamsJson = provideBidRequest.invoke(bidRequestParams, auctionId)
 
         val currentLoopIndex = PlacementLoopIndexTracker.getCount(bidRequestParams.placementName)
 
@@ -135,6 +143,19 @@ private class BidAdSourceImpl<T : Destroyable>(
             result = requestBid.invoke(bidRequestParams.appKey, enrichedPayload)
         }
 
+        TrackingFieldResolver.setRequestData(
+            auctionId,
+            bidRequestParamsJson
+        )
+        TrackingFieldResolver.setLoopIndex(
+            auctionId,
+            PlacementLoopIndexTracker.getCount(bidRequestParams.placementName)
+        )
+        val encoded = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
+        encoded?.let {
+            eventTracking.send(it, "c1", 1, EventType.BidRequest)
+        }
+
         return when (result) {
             is Result.Failure -> {
                 CloudXLogger.error(logTag, result.value.description)
@@ -156,17 +177,9 @@ private class BidAdSourceImpl<T : Destroyable>(
                     )
 
                     TrackingFieldResolver.setSdkParam(
-                        result.value.auctionId,
+                        auctionId,
                         SDK_PARAM_RESPONSE_IN_MILLIS,
                         bidRequestLatencyMillis.toString()
-                    )
-                    TrackingFieldResolver.setRequestData(
-                        result.value.auctionId,
-                        bidRequestParamsJson
-                    )
-                    TrackingFieldResolver.setLoopIndex(
-                        result.value.auctionId,
-                        PlacementLoopIndexTracker.getCount(bidRequestParams.placementName)
                     )
 
                     metricsTracker.bidSuccess(bidRequestParams.adId, bidRequestLatencyMillis)

@@ -53,6 +53,7 @@ internal fun BidBannerSource(
         ),
         requestBid,
         cdpApi,
+        eventTracker,
         metricsTracker
     ) {
 

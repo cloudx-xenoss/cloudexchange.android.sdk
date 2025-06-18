@@ -10,12 +10,14 @@ import io.cloudx.sdk.internal.screen.ScreenService
 import io.cloudx.sdk.mocks.MockAppInfoProvider
 import io.cloudx.sdk.mocks.MockScreenService
 import io.cloudx.sdk.mocks.MockUserAgentProvider
+import io.mockk.InternalPlatformDsl.toStr
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkStatic
 import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Test
+import java.util.UUID
 
 class BidApiTest: RoboMockkTest() {
 
@@ -65,7 +67,8 @@ class BidApiTest: RoboMockkTest() {
             appKey = ""
         )
 
-        val bidParams = provideBidRequest.invoke(params)
+        val auctionId = UUID.randomUUID().toStr()
+        val bidParams = provideBidRequest.invoke(params, auctionId)
         val result = bidApi.invoke("", bidParams)
 
         assert(result is Result.Success) {
