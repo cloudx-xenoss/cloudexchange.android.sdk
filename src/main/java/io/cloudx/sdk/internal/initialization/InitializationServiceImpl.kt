@@ -2,6 +2,7 @@ package io.cloudx.sdk.internal.initialization
 
 import android.app.Activity
 import io.cloudx.sdk.BuildConfig
+import io.cloudx.sdk.CloudX
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.CloudXLogger
@@ -30,6 +31,7 @@ import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.InitOperationStatus
 import io.cloudx.sdk.internal.tracking.MetricsTracker
+import io.cloudx.sdk.internal.util.normalizeAndHash
 import io.ktor.http.websocket.websocketServerAccept
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -83,7 +85,6 @@ internal class InitializationServiceImpl(
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
-                println("hop: endpoints are resolved!")
                 ResolvedEndpoints.resolveFrom(cfg)
 
                 metricsTracker.init(appKey, cfg)
@@ -102,6 +103,13 @@ internal class InitializationServiceImpl(
                         }
                     }?.toMap() ?: emptyMap()
 
+                    // TODO: Hardcoded for now, should be configurable later via config CX-919.
+                    val userGeoIp = headersMap["x-amzn-remapped-x-forwarded-for"]
+                    val hashedGeoIp = userGeoIp?.let { normalizeAndHash(userGeoIp) } ?: ""
+                    CloudXLogger.info("MainActivity", "User Geo IP: $userGeoIp")
+                    CloudXLogger.info("MainActivity", "Hashed Geo IP: $hashedGeoIp")
+                    TrackingFieldResolver.setHashedGeoIp(hashedGeoIp)
+
                     CloudXLogger.info("MainActivity", "geo data: $geoInfo")
                     GeoInfoHolder.setGeoInfo(geoInfo)
                 }
@@ -113,6 +121,8 @@ internal class InitializationServiceImpl(
                 initializeAdapterNetworks(cfg, activity)
 
                 MatcherRegistry.registerMatchers()
+
+
 
                 val deviceInfo = provideDeviceInfo()
                 val sdkVersion = BuildConfig.SDK_VERSION_NAME

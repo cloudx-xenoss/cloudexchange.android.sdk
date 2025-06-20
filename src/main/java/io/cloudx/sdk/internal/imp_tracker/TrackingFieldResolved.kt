@@ -2,6 +2,7 @@ package io.cloudx.sdk.internal.imp_tracker
 
 import android.util.Base64
 import io.cloudx.sdk.internal.config.Config
+import io.cloudx.sdk.internal.state.SdkUserState
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
@@ -29,6 +30,7 @@ internal object TrackingFieldResolver {
     private var sdkVersion: String? = null
     private var deviceType: String? = null
     private var abTestGroup: String? = null
+    private var hashedGeoIp: String? = null
 
     fun setConfig(config: Config) {
         tracking = config.trackers
@@ -79,6 +81,9 @@ internal object TrackingFieldResolver {
         return Base64.encodeToString(rawString.toByteArray(), Base64.NO_WRAP)
     }
 
+    fun setHashedGeoIp(hashedGeoIp: String) {
+        this.hashedGeoIp = hashedGeoIp
+    }
 
     fun clear(auctionId: String) {
         requestDataMap.remove(auctionId)
@@ -160,10 +165,21 @@ internal object TrackingFieldResolver {
                 if (field == BID_REQUEST_PARAM_LOOP_INDEX) {
                     return auctionedLoopIndex[auctionId]
                 }
-//                if (field == BID_REQUEST_PARAM_IFA) {
-//                    val bidRequestIfa = requestDataMap[auctionId]?.optJSONObject("device")?.optString("ifa")
-//
-//                }
+                if (field == BID_REQUEST_PARAM_IFA) { // TODO: CX-919 Temporary Hardcoded Solution
+                    val isLimitAdTrackingEnabled = requestDataMap[auctionId]?.optJSONObject("device")?.optInt("dnt") == 1
+                    return if (isLimitAdTrackingEnabled) {
+                        val hashedUserId = SdkUserState.hashedUserId.orEmpty()
+                        val hasUserHashedId = hashedUserId.isBlank().not()
+                        if (hasUserHashedId) {
+                            hashedUserId
+                        } else {
+                            hashedGeoIp
+                        }
+                    } else {
+                        // ifa
+                        requestDataMap[auctionId]?.optJSONObject("device")?.optString("ifa")
+                    }
+                }
                 val json = requestDataMap[auctionId] ?: return null
                 val rawTemplate = field.removePrefix("bidRequest.")
                 val expandedPath = expandTemplate(rawTemplate)
