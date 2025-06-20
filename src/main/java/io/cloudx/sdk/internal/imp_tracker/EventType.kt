@@ -4,6 +4,7 @@ enum class EventType(
     val pathSegment: String,
     val code: String,
 ) {
+    SdkInit("sdkinit", "sdkinit"),
     Click("click", "click"),
     Impression("sdkimp", "imp"),
     BidRequest("bidreq", "bidreq");

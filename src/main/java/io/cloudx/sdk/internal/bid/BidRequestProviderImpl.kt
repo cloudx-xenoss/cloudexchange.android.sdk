@@ -215,7 +215,7 @@ internal class BidRequestProviderImpl(
                         put("ext", JSONObject().apply {
                             put("prebid", JSONObject().apply {
                                 put("buyeruids", JSONObject().apply {
-                                        put("cloudx", hashedUserId)
+                                    put("cloudx", hashedUserId)
 
                                     // New: additional hashed key-values
 //                                SdkKeyValueState.hashedKeyValues.forEach { (k, v) ->
@@ -231,16 +231,15 @@ internal class BidRequestProviderImpl(
 
                 put("ext", JSONObject().apply {
                     put("prebid", JSONObject().apply {
-                        if (SdkKeyValueState.keyValues.isNotEmpty()) {
-                            put("adservertargeting", JSONArray().apply {
+                        put("adservertargeting", JSONArray().apply {
+                            val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
+                            put(JSONObject().apply {
+                                put("key", "loop-index")
+                                put("source", "bidrequest")
+                                put("value", loopIndex.toString())
+                            })
 
-                                val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
-                                put(JSONObject().apply {
-                                    put("key", "loop-index")
-                                    put("source", "bidrequest")
-                                    put("value", loopIndex.toString())
-                                })
-
+                            if (SdkKeyValueState.keyValues.isNotEmpty()) {
                                 SdkKeyValueState.keyValues.forEach { (k, v) ->
                                     put(JSONObject().apply {
                                         put("key", k)
@@ -248,8 +247,8 @@ internal class BidRequestProviderImpl(
                                         put("value", v)
                                     })
                                 }
-                            })
-                        }
+                            }
+                        })
                     })
                     putBidRequestAdapterExtras(context, bidRequestExtrasProviders)
                 })

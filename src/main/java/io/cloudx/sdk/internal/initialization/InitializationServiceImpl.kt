@@ -3,10 +3,12 @@ package io.cloudx.sdk.internal.initialization
 import android.app.Activity
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
+import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.CloudXLogger
 import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.adfactory.AdFactory
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
+import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.common.service.ActivityLifecycleService
 import io.cloudx.sdk.internal.common.service.AppLifecycleService
 import io.cloudx.sdk.internal.common.utcNowEpochMillis
@@ -21,16 +23,19 @@ import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.InitOperationStatus
 import io.cloudx.sdk.internal.tracking.MetricsTracker
+import io.ktor.http.websocket.websocketServerAccept
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 
@@ -78,7 +83,7 @@ internal class InitializationServiceImpl(
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
-
+                println("hop: endpoints are resolved!")
                 ResolvedEndpoints.resolveFrom(cfg)
 
                 metricsTracker.init(appKey, cfg)
@@ -121,6 +126,27 @@ internal class InitializationServiceImpl(
                     ResolvedEndpoints.testGroupName
                 )
                 TrackingFieldResolver.setConfig(cfg)
+
+                val eventId = UUID.randomUUID().toString()
+                val bidRequestParams = BidRequestProvider.Params(
+                    adId = "",
+                    adType = AdType.Banner.Standard,
+                    placementName = "",
+                    lineItems = emptyList(),
+                    accountId = cfg.accountId ?: "",
+                    appKey = appKey
+                )
+                val bidRequestProvider = BidRequestProvider(
+                    activity,
+                    emptyMap()
+                )
+                val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
+                TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
+
+                val encodingData = TrackingFieldResolver.buildEncodedImpressionId(eventId)
+                encodingData?.let {
+                    eventTracker.send(it, "c1", 1, EventType.SdkInit)
+                }
             }
 
             metricsTracker.initOperationStatus(

@@ -35,7 +35,7 @@ internal class EventTrackingApiImpl(
             appendLine("  EventName: $eventName")
         })
 
-        CloudXLogger.info("MainActivity", "Tracking: Sent $eventName event")
+        CloudXLogger.info("MainActivity", "Tracking: Sending ${eventName.uppercase()} event")
 
         return try {
             val response = httpClient.get(endpointUrl) {

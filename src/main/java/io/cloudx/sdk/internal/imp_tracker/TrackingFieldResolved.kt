@@ -15,6 +15,7 @@ internal object TrackingFieldResolver {
     private const val CONFIG_PARAM_AB_TEST_GROUP = "config.testGroupName"
 
     private const val BID_REQUEST_PARAM_LOOP_INDEX = "bidRequest.loopIndex"
+    private const val BID_REQUEST_PARAM_IFA = "bidRequest.device.ifa"
 
     private var tracking: List<String>? = null
     private val requestDataMap = ConcurrentHashMap<String, JSONObject>()
@@ -159,6 +160,10 @@ internal object TrackingFieldResolver {
                 if (field == BID_REQUEST_PARAM_LOOP_INDEX) {
                     return auctionedLoopIndex[auctionId]
                 }
+//                if (field == BID_REQUEST_PARAM_IFA) {
+//                    val bidRequestIfa = requestDataMap[auctionId]?.optJSONObject("device")?.optString("ifa")
+//
+//                }
                 val json = requestDataMap[auctionId] ?: return null
                 val rawTemplate = field.removePrefix("bidRequest.")
                 val expandedPath = expandTemplate(rawTemplate)
