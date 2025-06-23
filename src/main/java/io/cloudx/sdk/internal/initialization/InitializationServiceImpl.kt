@@ -112,6 +112,8 @@ internal class InitializationServiceImpl(
 
                     CloudXLogger.info("MainActivity", "geo data: $geoInfo")
                     GeoInfoHolder.setGeoInfo(geoInfo)
+
+                    sendInitSDKEvent(activity, cfg, appKey)
                 }
 
                 val factories = resolveAdapters(cfg)
@@ -121,42 +123,6 @@ internal class InitializationServiceImpl(
                 initializeAdapterNetworks(cfg, activity)
 
                 MatcherRegistry.registerMatchers()
-
-
-
-                val deviceInfo = provideDeviceInfo()
-                val sdkVersion = BuildConfig.SDK_VERSION_NAME
-                val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
-                val sessionId = cfg.sessionId + UUID.randomUUID().toString()
-
-                TrackingFieldResolver.setSessionConstData(
-                    sessionId,
-                    sdkVersion,
-                    deviceType,
-                    ResolvedEndpoints.testGroupName
-                )
-                TrackingFieldResolver.setConfig(cfg)
-
-                val eventId = UUID.randomUUID().toString()
-                val bidRequestParams = BidRequestProvider.Params(
-                    adId = "",
-                    adType = AdType.Banner.Standard,
-                    placementName = "",
-                    lineItems = emptyList(),
-                    accountId = cfg.accountId ?: "",
-                    appKey = appKey
-                )
-                val bidRequestProvider = BidRequestProvider(
-                    activity,
-                    emptyMap()
-                )
-                val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
-                TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
-
-                val encodingData = TrackingFieldResolver.buildEncodedImpressionId(eventId)
-                encodingData?.let {
-                    eventTracker.send(it, "c1", 1, EventType.SdkInit)
-                }
             }
 
             metricsTracker.initOperationStatus(
@@ -232,6 +198,42 @@ internal class InitializationServiceImpl(
                 bidderCfg.value.initData,
                 privacyService.cloudXPrivacy
             )
+        }
+    }
+
+    private suspend fun sendInitSDKEvent(activity: Activity, cfg: Config, appKey: String) {
+        val deviceInfo = provideDeviceInfo()
+        val sdkVersion = BuildConfig.SDK_VERSION_NAME
+        val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
+        val sessionId = cfg.sessionId + UUID.randomUUID().toString()
+
+        TrackingFieldResolver.setSessionConstData(
+            sessionId,
+            sdkVersion,
+            deviceType,
+            ResolvedEndpoints.testGroupName
+        )
+        TrackingFieldResolver.setConfig(cfg)
+
+        val eventId = UUID.randomUUID().toString()
+        val bidRequestParams = BidRequestProvider.Params(
+            adId = "",
+            adType = AdType.Banner.Standard,
+            placementName = "",
+            lineItems = emptyList(),
+            accountId = cfg.accountId ?: "",
+            appKey = appKey
+        )
+        val bidRequestProvider = BidRequestProvider(
+            activity,
+            emptyMap()
+        )
+        val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
+        TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
+
+        val encodingData = TrackingFieldResolver.buildEncodedImpressionId(eventId)
+        encodingData?.let {
+            eventTracker.send(it, "c1", 1, EventType.SdkInit)
         }
     }
 }
