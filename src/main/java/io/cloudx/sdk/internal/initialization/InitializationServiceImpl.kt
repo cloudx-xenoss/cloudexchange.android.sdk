@@ -28,6 +28,7 @@ import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
+import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.InitOperationStatus
 import io.cloudx.sdk.internal.tracking.MetricsTracker
@@ -86,6 +87,7 @@ internal class InitializationServiceImpl(
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
                 ResolvedEndpoints.resolveFrom(cfg)
+                SdkKeyValueState.setKeyValuePaths(cfg.keyValuePaths)
 
                 metricsTracker.init(appKey, cfg)
 

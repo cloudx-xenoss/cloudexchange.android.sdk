@@ -37,6 +37,14 @@ internal suspend fun jsonToConfig(json: String): Result<Config, Error> =
                     appKeyOverride = root.optString("appKeyOverride", null),
                     trackers = root.optJSONArray("tracking")?.toTrackers(),
                     geoHeaders = root.optJSONArray("geoHeaders")?.toGeoHeaders(),
+                    keyValuePaths = root.optJSONObject("keyValuePaths")?.let { kvp ->
+                        Config.KeyValuePaths(
+                            keyValues = kvp.optString("keyValues", null),
+                            hashedKeyValues = kvp.optString("hashedKeyValues", null),
+                            bidderKeyValues = kvp.optString("bidderKeyValues", null),
+                            loopIndex = kvp.optString("loopIndex", null)
+                        )
+                    },
                     rawJson = root
                 )
             )

@@ -6,6 +6,7 @@ import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
+import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.connectionstatus.ConnectionType
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfo
@@ -46,7 +47,7 @@ internal class BidRequestProviderImpl(
 
     override suspend fun invoke(params: BidRequestProvider.Params, auctionId: String): JSONObject =
         withContext(Dispatchers.IO) {
-            JSONObject().apply {
+            val requestJson = JSONObject().apply {
 
                 put("id", auctionId)
 
@@ -162,99 +163,186 @@ internal class BidRequestProviderImpl(
                                 put("storedimpression", JSONObject().apply {
                                     put("id", effectiveAdId)
                                 })
-
-//                                if (SdkKeyValueState.keyValues.isNotEmpty()) {
-//                                    put("adservertargeting", JSONArray().apply {
-//
-//                                        val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
-//                                        put(JSONObject().apply {
-//                                            put("key", "loop-index")
-//                                            put("source", "bidrequest")
-//                                            put("value", loopIndex.toString())
-//                                        })
-//
-//                                        put(JSONObject().apply {
-//                                            put("key", "age")
-//                                            put("source", "lambda")
-//                                            put("value", "30")
-//                                        })
-//
-//                                        SdkKeyValueState.keyValues.forEach { (k, v) ->
-//                                            put(JSONObject().apply {
-//                                                put("key", k)
-//                                                put("source", "bidrequest")
-//                                                put("value", v)
-//                                            })
-//                                        }
-//                                    })
-//                                }
                             })
-
-                            SdkKeyValueState.bidderKeyValues.forEach { (bidder, keyValueMap) ->
-                                put(bidder, JSONObject().apply {
-                                    put("adservertargeting", JSONArray().apply {
-                                        keyValueMap.forEach { (k, v) ->
-                                            put(JSONObject().apply {
-                                                put("key", k)
-                                                put("source", "bidrequest")
-                                                put("value", v)
-                                            })
-                                        }
-                                    })
-                                })
-                            }
                         })
                     })
                 })
 
-                // hardcoded for now.
-//                put("tmax", 1000)
-                val hashedUserId = SdkUserState.hashedUserId
-                if (!hashedUserId.isNullOrBlank()) {
-                    put("user", JSONObject().apply {
-                        put("ext", JSONObject().apply {
-                            put("prebid", JSONObject().apply {
-                                put("buyeruids", JSONObject().apply {
-                                    put("cloudx", hashedUserId)
-
-                                    // New: additional hashed key-values
-//                                SdkKeyValueState.hashedKeyValues.forEach { (k, v) ->
-//                                    put(k, v)
-//                                }
-                                })
-                            })
-                        })
-                    })
-                }
 
                 putRegsObject(privacyService)
 
                 put("ext", JSONObject().apply {
-                    put("prebid", JSONObject().apply {
-                        put("adservertargeting", JSONArray().apply {
-                            val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
-                            put(JSONObject().apply {
-                                put("key", "loop-index")
-                                put("source", "bidrequest")
-                                put("value", loopIndex.toString())
-                            })
-
-                            if (SdkKeyValueState.keyValues.isNotEmpty()) {
-                                SdkKeyValueState.keyValues.forEach { (k, v) ->
-                                    put(JSONObject().apply {
-                                        put("key", k)
-                                        put("source", "bidrequest")
-                                        put("value", v)
-                                    })
-                                }
-                            }
-                        })
-                    })
                     putBidRequestAdapterExtras(context, bidRequestExtrasProviders)
                 })
             }
+
+            SdkKeyValueState.keyValues.putAll(
+                mutableMapOf(
+                    "test_key_1" to "test_value_1",
+                    "test_key_2" to "test_value_2",
+                    "test_key_3" to "test_value_3",
+                    "test_key_4" to "test_value_4"
+                )
+            )
+            SdkKeyValueState.hashedKeyValues.putAll(
+                mutableMapOf(
+                    "hashed_test_key_1" to "hashed_test_value_1",
+                    "hashed_test_key_2" to "hashed_test_value_2"
+                )
+            )
+            SdkKeyValueState.bidderKeyValues.putAll(
+                mutableMapOf(
+                    "bidder_test_key_1" to mutableMapOf("test_key_1" to "test_value_1"),
+                    "bidder_test_key_2" to mutableMapOf("test_key_2" to "test_value_2")
+                )
+            )
+
+            val keyValuePaths = SdkKeyValueState.getKeyValuePaths()
+
+            // === Inject keyValues ===
+            keyValuePaths?.keyValues?.let { path ->
+                if (SdkKeyValueState.keyValues.isNotEmpty()) {
+                    val kvJson = JSONObject().apply {
+                        SdkKeyValueState.keyValues.forEach { (k, v) -> put(k, v) }
+                    }
+                    requestJson.putAtDynamicPath(path, kvJson)
+                }
+            }
+
+            // === Inject hashedKeyValues ===
+            keyValuePaths?.hashedKeyValues?.let { path ->
+                SdkKeyValueState.hashedKeyValues.forEach { (key, value) ->
+                    val eid = JSONObject().apply {
+                        put("source", "cx_$key")
+                        put("uids", JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("id", value)
+                                put("atype", 1)
+                            })
+                        })
+                    }
+                    requestJson.putAtDynamicPath(path, eid)
+                }
+            }
+
+            // === Inject hashedUserId ===
+            SdkUserState.hashedUserId?.let { hashedId ->
+                keyValuePaths?.hashedKeyValues?.let { path ->
+                    val eid = JSONObject().apply {
+                        put("source", "cloudx")
+                        put("uids", JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("id", hashedId)
+                                put("atype", 1)
+                            })
+                        })
+                    }
+                    requestJson.putAtDynamicPath(path, eid)
+                }
+            }
+
+            // === Inject bidderKeyValues ===
+            keyValuePaths?.bidderKeyValues?.let { path ->
+                SdkKeyValueState.bidderKeyValues.forEach { (bidder, map) ->
+                    val configBlock = JSONObject().apply {
+                        put("bidders", JSONArray().put(bidder))
+                        put("config", JSONObject().apply {
+                            put("ortb2", JSONObject().apply {
+                                put("user", JSONObject().apply {
+                                    put("ext", JSONObject().apply {
+                                        put("data", JSONObject().apply {
+                                            map.forEach { (k, v) -> put(k, v) }
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    }
+                    requestJson.putAtDynamicPath(path, configBlock)
+                }
+            }
+
+            keyValuePaths?.loopIndex?.let {
+                val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
+                requestJson.putAtDynamicPath(it, loopIndex.toString())
+            }
+
+            requestJson
         }
 }
+
+fun JSONObject.putAtDynamicPath(path: String, value: Any) {
+    val parts = path.split(".")
+    var current: Any = this
+
+    for (i in 0 until parts.lastIndex) {
+        val raw = parts[i]
+
+        val isAppendToArray = raw.endsWith("[]")
+        val isIndexedArray = raw.matches(Regex(".*\\[\\d+\\]"))
+        val key = raw.removeSuffix("[]").replace(Regex("\\[\\d+]"), "")
+        val index = Regex(".*\\[(\\d+)]").find(raw)?.groupValues?.get(1)?.toIntOrNull()
+
+        current = when (current) {
+            is JSONObject -> {
+                if (!current.has(key)) {
+                    current.put(
+                        key,
+                        when {
+                            isAppendToArray || isIndexedArray -> JSONArray()
+                            else -> JSONObject()
+                        }
+                    )
+                }
+                val child = current.get(key)
+                if (isIndexedArray && child is JSONArray && index != null) {
+                    while (child.length() <= index) {
+                        child.put(JSONObject())
+                    }
+                    child.get(index)
+                } else {
+                    child
+                }
+            }
+
+            else -> throw IllegalStateException("Unexpected type at path segment '${parts[i]}': $current")
+        }
+    }
+
+    // Final node
+    val lastRaw = parts.last()
+    val isAppendFinal = lastRaw.endsWith("[]")
+    val isIndexedFinal = lastRaw.matches(Regex(".*\\[\\d+\\]"))
+    val lastKey = lastRaw.removeSuffix("[]").replace(Regex("\\[\\d+]"), "")
+    val lastIndex = Regex(".*\\[(\\d+)]").find(lastRaw)?.groupValues?.get(1)?.toIntOrNull()
+
+    when (current) {
+        is JSONObject -> {
+            if (isAppendFinal) {
+                val array = current.optJSONArray(lastKey) ?: JSONArray().also { current.put(lastKey, it) }
+                array.put(value)
+            } else if (isIndexedFinal && lastIndex != null) {
+                val array = current.optJSONArray(lastKey) ?: JSONArray().also { current.put(lastKey, it) }
+                while (array.length() <= lastIndex) array.put(JSONObject())
+                array.put(lastIndex, value)
+            } else {
+                current.put(lastKey, value)
+            }
+        }
+
+        is JSONArray -> {
+            if (isIndexedFinal && lastIndex != null) {
+                while (current.length() <= lastIndex) current.put(JSONObject())
+                current.put(lastIndex, value)
+            } else {
+                throw IllegalArgumentException("Invalid final path part: array access without index at '$lastRaw'")
+            }
+        }
+
+        else -> throw IllegalStateException("Unexpected type at final segment '$lastRaw': $current")
+    }
+}
+
 
 private suspend fun JSONObject.putRegsObject(privacyService: PrivacyService) {
     put("regs", JSONObject().apply {
@@ -333,22 +421,18 @@ private fun JSONObject.putNativeObject(specs: NativeAdSpecs) {
         put("privacy", 1)
 
         put(
-            "eventtrackers",
-            JSONArray().apply {
+            "eventtrackers", JSONArray().apply {
                 specs.eventTrackers.forEach {
                     put(
                         JSONObject().apply {
                             put("event", it.event.value)
                             put("methods", JSONArray(it.methodTypes.map { it.value }.toList()))
-                        }
-                    )
+                        })
                 }
-            }
-        )
+            })
 
         put(
-            "assets",
-            JSONArray().apply {
+            "assets", JSONArray().apply {
                 specs.assets.values.forEach {
                     put(
                         JSONObject().apply {
@@ -357,53 +441,41 @@ private fun JSONObject.putNativeObject(specs: NativeAdSpecs) {
 
                             when (it) {
                                 is NativeAdSpecs.Asset.Data -> put(
-                                    "data",
-                                    JSONObject().apply {
+                                    "data", JSONObject().apply {
                                         put("type", it.type.value)
                                         it.len?.let { len -> put("len", len) }
-                                    }
-                                )
+                                    })
 
                                 is NativeAdSpecs.Asset.Image -> put(
-                                    "img",
-                                    JSONObject().apply {
+                                    "img", JSONObject().apply {
                                         put("type", it.type.value)
                                         // Allow any sizes.
                                         put("wmin", 1)
                                         put("hmin", 1)
-                                    }
-                                )
+                                    })
 
                                 is NativeAdSpecs.Asset.Title -> put(
-                                    "title",
-                                    JSONObject().apply {
+                                    "title", JSONObject().apply {
                                         put("len", it.length)
-                                    }
-                                )
+                                    })
 
                                 is NativeAdSpecs.Asset.Video -> put(
-                                    "video",
-                                    JSONObject().apply {
+                                    "video", JSONObject().apply {
                                         // Currently using hardcoded ones.
                                         put("mimes", SupportedMimeTypes)
                                         put("protocols", SupportedOrtbProtocols)
-                                    }
-                                )
+                                    })
                             }
-                        }
-                    )
+                        })
                 }
-            }
-        )
+            })
     }
 
     put(
-        "native",
-        JSONObject().apply {
+        "native", JSONObject().apply {
             put("ver", ver)
             put("request", requestField.toString())
-        }
-    )
+        })
 }
 
 private const val NativeVer = "1.2"

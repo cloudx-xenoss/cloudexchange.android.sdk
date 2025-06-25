@@ -27,6 +27,7 @@ internal class Config(
     val placements: Map<String, Placement>,
     val trackers: List<String>?,
     val geoHeaders: List<GeoHeader>?,
+    val keyValuePaths: KeyValuePaths?,
     val rawJson: JSONObject?
 ) {
 
@@ -162,5 +163,12 @@ internal class Config(
     data class GeoHeader(
         val source: String,
         val target: String
+    )
+
+    data class KeyValuePaths(
+        val keyValues: String?,
+        val hashedKeyValues: String?,
+        val bidderKeyValues: String?,
+        val loopIndex: String?
     )
 }
