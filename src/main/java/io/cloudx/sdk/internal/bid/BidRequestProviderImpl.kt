@@ -176,27 +176,6 @@ internal class BidRequestProviderImpl(
                 })
             }
 
-            SdkKeyValueState.keyValues.putAll(
-                mutableMapOf(
-                    "test_key_1" to "test_value_1",
-                    "test_key_2" to "test_value_2",
-                    "test_key_3" to "test_value_3",
-                    "test_key_4" to "test_value_4"
-                )
-            )
-            SdkKeyValueState.hashedKeyValues.putAll(
-                mutableMapOf(
-                    "hashed_test_key_1" to "hashed_test_value_1",
-                    "hashed_test_key_2" to "hashed_test_value_2"
-                )
-            )
-            SdkKeyValueState.bidderKeyValues.putAll(
-                mutableMapOf(
-                    "bidder_test_key_1" to mutableMapOf("test_key_1" to "test_value_1"),
-                    "bidder_test_key_2" to mutableMapOf("test_key_2" to "test_value_2")
-                )
-            )
-
             val keyValuePaths = SdkKeyValueState.getKeyValuePaths()
 
             // === Inject keyValues ===
