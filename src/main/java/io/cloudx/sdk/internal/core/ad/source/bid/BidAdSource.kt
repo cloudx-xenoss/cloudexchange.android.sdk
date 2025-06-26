@@ -97,8 +97,11 @@ private class BidAdSourceImpl<T : Destroyable>(
         CloudXLogger.debug(logTag, "======== loop-index=$currentLoopIndex")
         CloudXLogger.debug(logTag, "")
 // User Params
-        val userParams = SdkKeyValueState.keyValues
+        val userParams = SdkKeyValueState.userKeyValues
         CloudXLogger.debug(logTag, "user params: $userParams")
+
+        val appParams = SdkKeyValueState.userKeyValues
+        CloudXLogger.debug(logTag, "app params: $appParams")
 
         val isCdpDisabled = ResolvedEndpoints.cdpEndpoint.isBlank()
 

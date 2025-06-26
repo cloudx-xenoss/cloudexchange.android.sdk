@@ -2,7 +2,7 @@ package io.cloudx.sdk.internal.imp_tracker
 
 import android.util.Base64
 import io.cloudx.sdk.internal.config.Config
-import io.cloudx.sdk.internal.state.SdkUserState
+import io.cloudx.sdk.internal.state.SdkKeyValueState
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
@@ -168,7 +168,7 @@ internal object TrackingFieldResolver {
                 if (field == BID_REQUEST_PARAM_IFA) { // TODO: CX-919 Temporary Hardcoded Solution
                     val isLimitAdTrackingEnabled = requestDataMap[auctionId]?.optJSONObject("device")?.optInt("dnt") == 1
                     return if (isLimitAdTrackingEnabled) {
-                        val hashedUserId = SdkUserState.hashedUserId.orEmpty()
+                        val hashedUserId = SdkKeyValueState.hashedUserId.orEmpty()
                         val hasUserHashedId = hashedUserId.isBlank().not()
                         if (hasUserHashedId) {
                             hashedUserId

@@ -48,59 +48,6 @@ internal fun BidRequestProvider.Params.withEffectiveAdId(): String {
         PlacementLoopIndexTracker.getAndIncrement(placementName)
     }
 
-    if (placementName.isBlank() || lineItems.isNullOrEmpty()) {
-        println("❌ withEffectiveAdId: adId=$adId (lineItems)")
-        return adId
-    }
-
-    val context = MatchContext(
-        loopIndex = currentLoopIndex,
-        keyValue = SdkKeyValueState.keyValues,
-        hashedKeyValues = SdkKeyValueState.hashedKeyValues,
-        bidderKeyValues = SdkKeyValueState.bidderKeyValues
-    )
-
-    println("🔍 withEffectiveAdId: adId=$adId, loopIndex=$currentLoopIndex, placement=$placementName")
-    println("🔍 keyValues = ${context.keyValue}")
-    println("🔍 hashedKeyValues = ${context.hashedKeyValues}")
-    println("🔍 bidderKeyValues = ${context.bidderKeyValues}")
-
-    for ((i, lineItem) in lineItems.withIndex()) {
-        val targeting = lineItem.targeting
-        println("➡️ Evaluating lineItem[$i]: suffix=${lineItem.suffix}, targeting=$targeting")
-
-        if (targeting == null) {
-            println("⏭️ Skipping lineItem[$i] because targeting is null")
-            continue
-        }
-
-        val matched = LineItemEvaluator.evaluateTargeting(targeting, context)
-        println("✅ Match result for lineItem[$i] = $matched")
-
-        if (matched) {
-            val suffixedId = lineItem.suffix?.let { "$adId$it" } ?: adId
-            if (lineItem.suffix != null) {
-                println("🟢 MATCHED with suffix! Returning adId=$suffixedId")
-                CloudXLogger.debug(
-                    tag = "BannerImpl",
-                    msg = "🟢 LineItem rule matches!\nUsed $suffixedId line item! color=green"
-                )
-            } else {
-                println("🟢 MATCHED (no suffix)! Returning adId=$suffixedId")
-                CloudXLogger.debug(
-                    tag = "BannerImpl",
-                    msg = "adId: $suffixedId [loop=$currentLoopIndex, placement=\"$placementName\"]"
-                )
-            }
-            return suffixedId
-        }
-    }
-
-    println("🔴 No matching lineItem found. Returning adId=$adId")
-    CloudXLogger.error(
-        tag = "BannerImpl",
-        msg = "🔴 No LineItem Match color=red"
-    )
     return adId
 }
 

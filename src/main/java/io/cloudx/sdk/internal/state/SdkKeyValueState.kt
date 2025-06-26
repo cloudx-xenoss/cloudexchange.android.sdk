@@ -4,18 +4,17 @@ import io.cloudx.sdk.internal.config.Config
 
 internal object SdkKeyValueState {
 
-    val keyValues: MutableMap<String, String> = mutableMapOf()
+    var hashedUserId: String? = null
 
-    val hashedKeyValues: MutableMap<String, String> = mutableMapOf()
-
-    val bidderKeyValues: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
+    val userKeyValues: MutableMap<String, String> = mutableMapOf()
+    val appKeyValues: MutableMap<String, String> = mutableMapOf()
 
     private var configPaths: Config.KeyValuePaths? = null
 
     fun clear() {
-        keyValues.clear()
-        hashedKeyValues.clear()
-        bidderKeyValues.clear()
+        hashedUserId = null
+        userKeyValues.clear()
+        appKeyValues.clear()
     }
 
     fun setKeyValuePaths(configPaths: Config.KeyValuePaths?) {

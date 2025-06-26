@@ -1,7 +1,6 @@
 package io.cloudx.sdk.internal.bid
 
 import android.content.Context
-import io.cloudx.sdk.internal.state.SdkUserState
 import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
@@ -179,24 +178,33 @@ internal class BidRequestProviderImpl(
             val keyValuePaths = SdkKeyValueState.getKeyValuePaths()
 
             // === Inject keyValues ===
-            keyValuePaths?.keyValues?.let { path ->
-                if (SdkKeyValueState.keyValues.isNotEmpty()) {
+            keyValuePaths?.userKeyValues?.let { path ->
+                if (SdkKeyValueState.userKeyValues.isNotEmpty()) {
                     val kvJson = JSONObject().apply {
-                        SdkKeyValueState.keyValues.forEach { (k, v) -> put(k, v) }
+                        SdkKeyValueState.userKeyValues.forEach { (k, v) -> put(k, v) }
+                    }
+                    requestJson.putAtDynamicPath(path, kvJson)
+                }
+            }
+
+            keyValuePaths?.appKeyValues?.let { path ->
+                if (SdkKeyValueState.appKeyValues.isNotEmpty()) {
+                    val kvJson = JSONObject().apply {
+                        SdkKeyValueState.appKeyValues.forEach { (k, v) -> put(k, v) }
                     }
                     requestJson.putAtDynamicPath(path, kvJson)
                 }
             }
 
             // === Inject hashedKeyValues ===
-            keyValuePaths?.hashedKeyValues?.let { path ->
-                SdkKeyValueState.hashedKeyValues.forEach { (key, value) ->
+            keyValuePaths?.eids?.let { path ->
+                SdkKeyValueState.hashedUserId?.let { hashedData ->
                     val eid = JSONObject().apply {
-                        put("source", "cx_$key")
+                        put("source", provideAppInfo.invoke().packageName)
                         put("uids", JSONArray().apply {
                             put(JSONObject().apply {
-                                put("id", value)
-                                put("atype", 1)
+                                put("id", hashedData)
+                                put("atype", 3)
                             })
                         })
                     }
@@ -204,44 +212,7 @@ internal class BidRequestProviderImpl(
                 }
             }
 
-            // === Inject hashedUserId ===
-            SdkUserState.hashedUserId?.let { hashedId ->
-                keyValuePaths?.hashedKeyValues?.let { path ->
-                    val eid = JSONObject().apply {
-                        put("source", "cloudx")
-                        put("uids", JSONArray().apply {
-                            put(JSONObject().apply {
-                                put("id", hashedId)
-                                put("atype", 1)
-                            })
-                        })
-                    }
-                    requestJson.putAtDynamicPath(path, eid)
-                }
-            }
-
-            // === Inject bidderKeyValues ===
-            keyValuePaths?.bidderKeyValues?.let { path ->
-                SdkKeyValueState.bidderKeyValues.forEach { (bidder, map) ->
-                    val configBlock = JSONObject().apply {
-                        put("bidders", JSONArray().put(bidder))
-                        put("config", JSONObject().apply {
-                            put("ortb2", JSONObject().apply {
-                                put("user", JSONObject().apply {
-                                    put("ext", JSONObject().apply {
-                                        put("data", JSONObject().apply {
-                                            map.forEach { (k, v) -> put(k, v) }
-                                        })
-                                    })
-                                })
-                            })
-                        })
-                    }
-                    requestJson.putAtDynamicPath(path, configBlock)
-                }
-            }
-
-            keyValuePaths?.loopIndex?.let {
+            keyValuePaths?.placementLoopIndex?.let {
                 val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
                 requestJson.putAtDynamicPath(it, loopIndex.toString())
             }

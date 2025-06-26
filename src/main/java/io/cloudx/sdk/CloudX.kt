@@ -8,7 +8,6 @@ import io.cloudx.sdk.internal.config.ConfigApi
 import io.cloudx.sdk.internal.initialization.InitializationService
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
-import io.cloudx.sdk.internal.state.SdkUserState
 import io.cloudx.sdk.internal.targeting.TargetingService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -91,7 +90,7 @@ object CloudX {
         }
 
         initJob = scope.launch {
-            SdkUserState.hashedUserId = initializationParams.hashedUserId
+            SdkKeyValueState.hashedUserId = initializationParams.hashedUserId
 
             // Already initialized.
             if (isInitialized) {
@@ -328,32 +327,24 @@ object CloudX {
      */
     @JvmStatic
     fun setHashedUserId(hashedEmail: String) {
-        SdkUserState.hashedUserId = hashedEmail
+        SdkKeyValueState.hashedUserId = hashedEmail
     }
 
 
     /**
-     * Publisher can provide additional plain key-value pairs.
+     * Publisher can provide additional user key-value pairs.
      */
     @JvmStatic
-    fun setKeyValue(key: String, value: String) {
-        SdkKeyValueState.keyValues[key] = value
+    fun setUserKeyValue(key: String, value: String) {
+        SdkKeyValueState.userKeyValues[key] = value
     }
 
     /**
-     * Publisher can provide additional hashed key-value pairs.
+     * Publisher can provide additional app key-value pairs.
      */
     @JvmStatic
-    fun setHashedKeyValue(key: String, value: String) {
-        SdkKeyValueState.hashedKeyValues[key] = value
-    }
-
-    /**
-     * Publisher can provide bidder-specific key-value pairs.
-     */
-    @JvmStatic
-    fun setBidderKeyValue(bidder: String, key: String, value: String) {
-        SdkKeyValueState.bidderKeyValues.getOrPut(bidder) { mutableMapOf() }[key] = value
+    fun setAppKeyValue(key: String, value: String) {
+        SdkKeyValueState.appKeyValues[key] = value
     }
 
     @JvmStatic

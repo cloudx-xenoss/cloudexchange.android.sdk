@@ -166,9 +166,9 @@ internal class Config(
     )
 
     data class KeyValuePaths(
-        val keyValues: String?,
-        val hashedKeyValues: String?,
-        val bidderKeyValues: String?,
-        val loopIndex: String?
+        val userKeyValues: String?,
+        val appKeyValues: String?,
+        val eids: String?,
+        val placementLoopIndex: String?
     )
 }
