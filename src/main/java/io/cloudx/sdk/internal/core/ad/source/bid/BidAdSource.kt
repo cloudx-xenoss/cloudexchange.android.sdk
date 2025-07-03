@@ -153,7 +153,7 @@ private class BidAdSourceImpl<T : Destroyable>(
             auctionId,
             PlacementLoopIndexTracker.getCount(bidRequestParams.placementName)
         )
-        val encoded = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
+        val encoded = TrackingFieldResolver.buildPayload(auctionId)
         encoded?.let {
             eventTracking.send(it, "c1", 1, EventType.BID_REQUEST)
         }

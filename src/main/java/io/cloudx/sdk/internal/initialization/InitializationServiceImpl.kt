@@ -230,7 +230,7 @@ internal class InitializationServiceImpl(
         val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
         TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
 
-        val encodingData = TrackingFieldResolver.buildEncodedImpressionId(eventId)
+        val encodingData = TrackingFieldResolver.buildPayload(eventId)
         encodingData?.let {
             eventTracker.send(it, "c1", 1, EventType.SDK_INIT)
         }

@@ -155,7 +155,7 @@ internal fun bidAdDecoration(
         val scope = GlobalScopes.IO
         scope.launch {
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
-            val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
+            val encodedNewVersion = TrackingFieldResolver.buildPayload(auctionId)
 
             encodedNewVersion?.let {
                 eventTracker.send(it, "c1", 1, EventType.IMPRESSION)
@@ -166,7 +166,7 @@ internal fun bidAdDecoration(
         val scope = GlobalScopes.IO
         scope.launch {
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
-            val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
+            val encodedNewVersion = TrackingFieldResolver.buildPayload(auctionId)
 
             encodedNewVersion?.let {
                 eventTracker.send(it, "c1", 1, EventType.CLICK)

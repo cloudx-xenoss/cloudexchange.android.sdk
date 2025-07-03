@@ -70,7 +70,7 @@ internal object TrackingFieldResolver {
         auctionedLoopIndex[auctionId] = loopIndex
     }
 
-    fun buildEncodedImpressionId(auctionId: String): String? {
+    fun buildPayload(auctionId: String): String? {
         val trackingList = tracking ?: return null
 
         val values = trackingList.map { field ->
