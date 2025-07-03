@@ -4,10 +4,10 @@ enum class EventType(
     val pathSegment: String,
     val code: String,
 ) {
-    SdkInit("sdkinit", "sdkinit"),
-    Click("click", "click"),
-    Impression("sdkimp", "imp"),
-    BidRequest("bidreq", "bidreq");
+    SDK_INIT("sdkinitenc", "sdkinit"),
+    CLICK("clickenc", "click"),
+    IMPRESSION("sdkimpenc", "imp"),
+    BID_REQUEST("bidreqenc", "bidreq");
 
     companion object {
         fun from(code: String): EventType? =

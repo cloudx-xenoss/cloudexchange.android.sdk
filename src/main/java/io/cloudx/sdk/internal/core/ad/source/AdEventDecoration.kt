@@ -158,7 +158,7 @@ internal fun bidAdDecoration(
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 
             encodedNewVersion?.let {
-                eventTracker.send(it, "c1", 1, EventType.Impression)
+                eventTracker.send(it, "c1", 1, EventType.IMPRESSION)
             }
         }
     },
@@ -169,7 +169,7 @@ internal fun bidAdDecoration(
             val encodedNewVersion = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
 
             encodedNewVersion?.let {
-                eventTracker.send(it, "c1", 1, EventType.Click)
+                eventTracker.send(it, "c1", 1, EventType.CLICK)
             }
         }
     }

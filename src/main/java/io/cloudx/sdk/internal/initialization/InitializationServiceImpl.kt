@@ -2,7 +2,6 @@ package io.cloudx.sdk.internal.initialization
 
 import android.app.Activity
 import io.cloudx.sdk.BuildConfig
-import io.cloudx.sdk.CloudX
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.CloudXLogger
@@ -33,12 +32,10 @@ import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.InitOperationStatus
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import io.cloudx.sdk.internal.util.normalizeAndHash
-import io.ktor.http.websocket.websocketServerAccept
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 
@@ -235,7 +232,7 @@ internal class InitializationServiceImpl(
 
         val encodingData = TrackingFieldResolver.buildEncodedImpressionId(eventId)
         encodingData?.let {
-            eventTracker.send(it, "c1", 1, EventType.SdkInit)
+            eventTracker.send(it, "c1", 1, EventType.SDK_INIT)
         }
     }
 }

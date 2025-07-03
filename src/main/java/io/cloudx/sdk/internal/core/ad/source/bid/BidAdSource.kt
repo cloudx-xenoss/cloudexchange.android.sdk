@@ -11,7 +11,6 @@ import io.cloudx.sdk.internal.bid.BidResponse
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.config.ResolvedEndpoints
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
-import io.cloudx.sdk.internal.imp_tracker.EventTrackingApi
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
@@ -156,7 +155,7 @@ private class BidAdSourceImpl<T : Destroyable>(
         )
         val encoded = TrackingFieldResolver.buildEncodedImpressionId(auctionId)
         encoded?.let {
-            eventTracking.send(it, "c1", 1, EventType.BidRequest)
+            eventTracking.send(it, "c1", 1, EventType.BID_REQUEST)
         }
 
         return when (result) {
