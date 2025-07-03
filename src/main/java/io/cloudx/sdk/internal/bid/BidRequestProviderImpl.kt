@@ -171,6 +171,26 @@ internal class BidRequestProviderImpl(
                 putRegsObject(privacyService)
 
                 put("ext", JSONObject().apply {
+                    put("prebid", JSONObject().apply {
+                        put("adservertargeting", JSONArray().apply {
+                            val loopIndex = PlacementLoopIndexTracker.getCount(params.placementName)
+                            put(JSONObject().apply {
+                                put("key", "loop-index")
+                                put("source", "bidrequest")
+                                put("value", loopIndex.toString())
+                            })
+
+                            if (SdkKeyValueState.userKeyValues.isNotEmpty()) {
+                                SdkKeyValueState.userKeyValues.forEach { (k, v) ->
+                                    put(JSONObject().apply {
+                                        put("key", k)
+                                        put("source", "bidrequest")
+                                        put("value", v)
+                                    })
+                                }
+                            }
+                        })
+                    })
                     putBidRequestAdapterExtras(context, bidRequestExtrasProviders)
                 })
             }
