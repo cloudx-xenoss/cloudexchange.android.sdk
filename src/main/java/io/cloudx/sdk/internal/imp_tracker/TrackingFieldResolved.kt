@@ -1,6 +1,5 @@
 package io.cloudx.sdk.internal.imp_tracker
 
-import android.util.Base64
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import org.json.JSONArray
@@ -84,8 +83,9 @@ internal object TrackingFieldResolver {
             resolveField(auctionId, field)?.toString().orEmpty()
         }
 
-        val rawString = values.joinToString(";")
-        return Base64.encodeToString(rawString.toByteArray(), Base64.NO_WRAP)
+        val payload = values.joinToString(";")
+        println("hop: payload = $payload")
+        return payload
     }
 
     fun setHashedGeoIp(hashedGeoIp: String) {
