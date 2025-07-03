@@ -14,6 +14,7 @@ import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
+import io.cloudx.sdk.internal.imp_tracker.XorEncryption
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
@@ -153,9 +154,15 @@ private class BidAdSourceImpl<T : Destroyable>(
             auctionId,
             PlacementLoopIndexTracker.getCount(bidRequestParams.placementName)
         )
-        val encoded = TrackingFieldResolver.buildPayload(auctionId)
-        encoded?.let {
-            eventTracking.send(it, "c1", 1, EventType.BID_REQUEST)
+
+        val payload = TrackingFieldResolver.buildPayload(auctionId)
+        val accountId = TrackingFieldResolver.getAccountId()
+
+        if (payload != null && accountId != null) {
+            val secret = XorEncryption.generateXorSecret(accountId)
+            val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
+            val impressionId = XorEncryption.encrypt(payload, secret)
+            eventTracking.send(impressionId, campaignId, 1, EventType.BID_REQUEST)
         }
 
         return when (result) {

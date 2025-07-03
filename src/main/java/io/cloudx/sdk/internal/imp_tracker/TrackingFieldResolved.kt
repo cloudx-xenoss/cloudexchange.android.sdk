@@ -32,7 +32,10 @@ internal object TrackingFieldResolver {
     private var abTestGroup: String? = null
     private var hashedGeoIp: String? = null
 
+    private var accountId: String? = null
+
     fun setConfig(config: Config) {
+        accountId = config.accountId
         tracking = config.trackers
         configDataMap = config.rawJson
     }
@@ -68,6 +71,10 @@ internal object TrackingFieldResolver {
 
     fun setLoopIndex(auctionId: String, loopIndex: Int) {
         auctionedLoopIndex[auctionId] = loopIndex
+    }
+
+    fun getAccountId(): String? {
+        return accountId
     }
 
     fun buildPayload(auctionId: String): String? {

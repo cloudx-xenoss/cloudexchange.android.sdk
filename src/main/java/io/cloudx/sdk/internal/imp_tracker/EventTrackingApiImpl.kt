@@ -10,6 +10,7 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
+import java.net.URLEncoder
 
 internal class EventTrackingApiImpl(
     private val timeoutMillis: Long,
@@ -40,10 +41,11 @@ internal class EventTrackingApiImpl(
         return try {
             val response = httpClient.get(endpointUrl) {
                 timeout { requestTimeoutMillis = timeoutMillis }
-                parameter("impression", encodedData)
-                parameter("campaignId", campaignId)
+                parameter("impression", URLEncoder.encode(encodedData, Charsets.UTF_8.name()))
+                parameter("campaignId", URLEncoder.encode(campaignId, Charsets.UTF_8.name()))
                 parameter("eventValue", "1")
                 parameter("eventName", eventName)
+                parameter("debug", true)
 
                 retry {
                     retryOnServerErrors(maxRetries = 3)
