@@ -222,77 +222,78 @@ internal class BidRequestProviderImpl(
 }
 
 fun JSONObject.putAtDynamicPath(path: String, value: Any) {
-    val parts = path.split(".")
-    var current: Any = this
-
-    for (i in 0 until parts.lastIndex) {
-        val raw = parts[i]
-
-        val isAppendToArray = raw.endsWith("[]")
-        val isIndexedArray = raw.matches(Regex(".*\\[\\d+\\]"))
-        val key = raw.removeSuffix("[]").replace(Regex("\\[\\d+]"), "")
-        val index = Regex(".*\\[(\\d+)]").find(raw)?.groupValues?.get(1)?.toIntOrNull()
-
-        current = when (current) {
-            is JSONObject -> {
-                if (!current.has(key)) {
-                    current.put(
-                        key,
-                        when {
-                            isAppendToArray || isIndexedArray -> JSONArray()
-                            else -> JSONObject()
-                        }
-                    )
-                }
-                val child = current.get(key)
-                if (isIndexedArray && child is JSONArray && index != null) {
-                    while (child.length() <= index) {
-                        child.put(JSONObject())
-                    }
-                    child.get(index)
-                } else {
-                    child
-                }
-            }
-
-            else -> throw IllegalStateException("Unexpected type at path segment '${parts[i]}': $current")
+    fun applyToAll(jsonArray: JSONArray, remainingPath: String, value: Any) {
+        for (i in 0 until jsonArray.length()) {
+            val item = jsonArray.optJSONObject(i) ?: continue
+            item.putAtDynamicPath(remainingPath, value)
         }
     }
 
-    // Final node
-    val lastRaw = parts.last()
-    val isAppendFinal = lastRaw.endsWith("[]")
-    val isIndexedFinal = lastRaw.matches(Regex(".*\\[\\d+\\]"))
-    val lastKey = lastRaw.removeSuffix("[]").replace(Regex("\\[\\d+]"), "")
-    val lastIndex = Regex(".*\\[(\\d+)]").find(lastRaw)?.groupValues?.get(1)?.toIntOrNull()
+    val parts = path.split(".")
+    if (parts.isEmpty()) return
 
-    when (current) {
-        is JSONObject -> {
-            if (isAppendFinal) {
-                val array = current.optJSONArray(lastKey) ?: JSONArray().also { current.put(lastKey, it) }
-                array.put(value)
-            } else if (isIndexedFinal && lastIndex != null) {
-                val array = current.optJSONArray(lastKey) ?: JSONArray().also { current.put(lastKey, it) }
-                while (array.length() <= lastIndex) array.put(JSONObject())
-                array.put(lastIndex, value)
-            } else {
-                current.put(lastKey, value)
+    val first = parts.first()
+    val rest = parts.drop(1).joinToString(".")
+
+    val isWildcard = first.endsWith("[*]")
+    val isIndexed = first.matches(Regex(".*\\[\\d+]"))
+    val key = first.replace(Regex("\\[.*]"), "")
+    val index = Regex(".*\\[(\\d+)]").find(first)?.groupValues?.get(1)?.toIntOrNull()
+
+    if (parts.size == 1) {
+        // Final segment
+        when {
+            isWildcard -> {
+                val array = this.optJSONArray(key) ?: JSONArray().also { this.put(key, it) }
+
+                if (array.length() == 0) {
+                    array.put(value) // append if empty
+                } else {
+                    for (i in 0 until array.length()) {
+                        array.put(i, value)
+                    }
+                }
+            }
+
+            isIndexed && index != null -> {
+                val array = this.optJSONArray(key) ?: JSONArray().also { this.put(key, it) }
+                while (array.length() <= index) array.put(JSONObject())
+                array.put(index, value)
+            }
+
+            else -> {
+                this.put(key, value)
             }
         }
+    } else {
+        // Intermediate segment
+        when {
+            isWildcard -> {
+                val array = this.optJSONArray(key) ?: JSONArray().also { this.put(key, it) }
 
-        is JSONArray -> {
-            if (isIndexedFinal && lastIndex != null) {
-                while (current.length() <= lastIndex) current.put(JSONObject())
-                current.put(lastIndex, value)
-            } else {
-                throw IllegalArgumentException("Invalid final path part: array access without index at '$lastRaw'")
+                // If empty, add a dummy object to continue traversal
+                if (array.length() == 0) {
+                    val dummy = JSONObject()
+                    array.put(dummy)
+                }
+
+                applyToAll(array, rest, value)
+            }
+
+            isIndexed && index != null -> {
+                val array = this.optJSONArray(key) ?: JSONArray().also { this.put(key, it) }
+                while (array.length() <= index) array.put(JSONObject())
+                val next = array.optJSONObject(index) ?: JSONObject().also { array.put(index, it) }
+                next.putAtDynamicPath(rest, value)
+            }
+
+            else -> {
+                val child = this.optJSONObject(key) ?: JSONObject().also { this.put(key, it) }
+                child.putAtDynamicPath(rest, value)
             }
         }
-
-        else -> throw IllegalStateException("Unexpected type at final segment '$lastRaw': $current")
     }
 }
-
 
 private suspend fun JSONObject.putRegsObject(privacyService: PrivacyService) {
     put("regs", JSONObject().apply {
