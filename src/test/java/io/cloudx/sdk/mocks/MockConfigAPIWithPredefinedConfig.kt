@@ -33,7 +33,7 @@ internal class MockConfigAPIWithPredefinedConfig : ConfigApi {
             trackers = emptyList(),
             appKeyOverride = "",
             rawJson = null,
-
+            keyValuePaths = null,
             placements = mapOf(
                 "defaultInterstitial".let { placementName ->
                     placementName to Config.Placement.Interstitial(
