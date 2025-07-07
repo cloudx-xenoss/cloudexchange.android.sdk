@@ -212,6 +212,13 @@ internal object TrackingFieldResolver {
                     else                  -> sdkMap[auctionId]?.get(field)
                 }
             }
+            // —— RESPONSE fields ——
+            field.startsWith("bidResponse.") -> {
+                val json = responseDataMap[auctionId] ?: return null
+                val rawTemplate = field.removePrefix("bidResponse.")
+                val expandedPath = expandTemplate(rawTemplate)
+                json.resolveNestedField(expandedPath)
+            }
 
             else -> null
         }
