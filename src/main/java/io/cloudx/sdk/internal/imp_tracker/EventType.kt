@@ -7,7 +7,8 @@ enum class EventType(
     SDK_INIT("sdkinitenc", "sdkinit"),
     CLICK("clickenc", "click"),
     IMPRESSION("sdkimpenc", "imp"),
-    BID_REQUEST("bidreqenc", "bidreq");
+    BID_REQUEST("bidreqenc", "bidreq"),
+    SDK_ERROR("sdkerrorenc", "error");
 
     companion object {
         fun from(code: String): EventType? =

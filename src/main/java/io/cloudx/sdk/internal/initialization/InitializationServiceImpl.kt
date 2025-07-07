@@ -1,6 +1,7 @@
 package io.cloudx.sdk.internal.initialization
 
 import android.app.Activity
+import android.content.Context
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdType
@@ -20,6 +21,7 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.resolver.AdapterFactoryResolver
 import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
+import io.cloudx.sdk.internal.exception.SdkCrashHandler
 import io.cloudx.sdk.internal.geo.GeoApi
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
@@ -37,8 +39,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.util.UUID
 import kotlin.system.measureTimeMillis
+import androidx.core.content.edit
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
@@ -59,11 +63,80 @@ internal class InitializationServiceImpl(
         get() = config != null
 
     private var config: Config? = null
+    private var activity: Activity? = null
+    private var appKey: String = ""
 
     private val mutex = Mutex()
 
+    private fun registerSdkCrashHandler() {
+        val current = Thread.getDefaultUncaughtExceptionHandler()
+        if (current !is SdkCrashHandler) {  // <---- Only set if not already set by us
+            Thread.setDefaultUncaughtExceptionHandler(
+                SdkCrashHandler { thread, throwable ->
+                    config?.let {
+                        val sessionId = it.sessionId
+                        val errorMessage = throwable.message
+                        val stackTrace = throwable.stackTraceToString()
+
+                        val pendingReport = PendingCrashReport(
+                            sessionId = sessionId,
+                            errorMessage = errorMessage ?: "Unknown error",
+                            errorDetails = stackTrace
+                        )
+
+                        savePendingCrashReport(activity, pendingReport)
+                    }
+                }
+            )
+        }
+    }
+
+    data class PendingCrashReport(
+        val sessionId: String,
+        val errorMessage: String,
+        val errorDetails: String,
+    )
+
+    private fun PendingCrashReport.toJson(): JSONObject {
+        return JSONObject().apply {
+            put("sessionId", sessionId)
+            put("errorMessage", errorMessage)
+            put("errorDetails", errorDetails)
+        }
+    }
+
+    private fun savePendingCrashReport(activity: Activity?, report: PendingCrashReport) {
+        activity?.let {
+            val json = report.toJson().toString()
+            val prefs = activity.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
+            prefs.edit(commit = true) { putString("pending_crash", json) }
+        }
+    }
+
+    private fun getPendingCrashIfAny(): PendingCrashReport? {
+        val prefs = activity?.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
+        val pendingJson = prefs?.getString("pending_crash", null) ?: return null
+
+        val pending = JSONObject(pendingJson).let { json ->
+            PendingCrashReport(
+                sessionId = json.getString("sessionId"),
+                errorMessage = json.getString("errorMessage"),
+                errorDetails = json.getString("errorDetails")
+            )
+        }
+
+        prefs.edit(commit = true) { remove("pending_crash") }
+
+        return pending
+    }
+
     override suspend fun initialize(appKey: String, activity: Activity): Result<Config, Error> =
         mutex.withLock {
+            this.appKey = appKey
+            this.activity = activity
+
+            registerSdkCrashHandler()
+
             // It is currently agreed to send pending metrics upon init API invocation.
             metricsTracker.trySendPendingMetrics()
 
@@ -84,6 +157,10 @@ internal class InitializationServiceImpl(
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
+                val pendingCrash = getPendingCrashIfAny()
+                pendingCrash?.let {
+                    sendErrorEvent(cfg, appKey, it)
+                }
                 ResolvedEndpoints.resolveFrom(cfg)
                 SdkKeyValueState.setKeyValuePaths(cfg.keyValuePaths)
 
@@ -113,7 +190,7 @@ internal class InitializationServiceImpl(
                     CloudXLogger.info("MainActivity", "geo data: $geoInfo")
                     GeoInfoHolder.setGeoInfo(geoInfo)
 
-                    sendInitSDKEvent(activity, cfg, appKey)
+                    sendInitSDKEvent(cfg, appKey)
                 }
 
                 val factories = resolveAdapters(cfg)
@@ -201,7 +278,7 @@ internal class InitializationServiceImpl(
         }
     }
 
-    private suspend fun sendInitSDKEvent(activity: Activity, cfg: Config, appKey: String) {
+    private suspend fun sendInitSDKEvent(cfg: Config, appKey: String) {
         val deviceInfo = provideDeviceInfo()
         val sdkVersion = BuildConfig.SDK_VERSION_NAME
         val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
@@ -224,8 +301,9 @@ internal class InitializationServiceImpl(
             accountId = cfg.accountId ?: "",
             appKey = appKey
         )
+        if (activity == null) return
         val bidRequestProvider = BidRequestProvider(
-            activity,
+            activity!!,
             emptyMap()
         )
         val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
@@ -239,6 +317,57 @@ internal class InitializationServiceImpl(
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
             eventTracker.send(impressionId, campaignId, 1, EventType.SDK_INIT)
+        }
+    }
+
+
+    private suspend fun sendErrorEvent(
+        cfg: Config,
+        appKey: String,
+        pendingCrashReport: PendingCrashReport
+    ) {
+        val deviceInfo = provideDeviceInfo()
+        val sdkVersion = BuildConfig.SDK_VERSION_NAME
+        val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
+        val sessionId = pendingCrashReport.sessionId
+
+        TrackingFieldResolver.setSessionConstData(
+            sessionId,
+            sdkVersion,
+            deviceType,
+            ResolvedEndpoints.testGroupName
+        )
+        TrackingFieldResolver.setConfig(cfg)
+
+        val eventId = UUID.randomUUID().toString()
+        val bidRequestParams = BidRequestProvider.Params(
+            adId = "",
+            adType = AdType.Banner.Standard,
+            placementName = "",
+            lineItems = emptyList(),
+            accountId = cfg.accountId ?: "",
+            appKey = appKey
+        )
+        if (activity == null) return
+        val bidRequestProvider = BidRequestProvider(
+            activity!!,
+            emptyMap()
+        )
+
+        val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
+        TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
+
+        var payload = TrackingFieldResolver.buildPayload(eventId)
+        payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")?.plus(pendingCrashReport.errorDetails)
+
+        println("hop: InitializationServiceImpl sendErrorEvent payload: $payload")
+        val accountId = TrackingFieldResolver.getAccountId()
+
+        if (payload != null && accountId != null) {
+            val secret = XorEncryption.generateXorSecret(accountId)
+            val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
+            val impressionId = XorEncryption.encrypt(payload, secret)
+            eventTracker.send(impressionId, campaignId, 1, EventType.SDK_ERROR)
         }
     }
 }

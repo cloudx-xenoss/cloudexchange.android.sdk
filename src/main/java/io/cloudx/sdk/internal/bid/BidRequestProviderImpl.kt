@@ -179,6 +179,16 @@ internal class BidRequestProviderImpl(
                                 put("source", "bidrequest")
                                 put("value", loopIndex.toString())
                             })
+                            put(JSONObject().apply {
+                                put("key", "geo")
+                                put("source", "bidrequest")
+                                put("value", "USA")
+                            })
+                            put(JSONObject().apply {
+                                put("key", "age")
+                                put("source", "bidrequest")
+                                put("value", "30")
+                            })
 
                             if (SdkKeyValueState.userKeyValues.isNotEmpty()) {
                                 SdkKeyValueState.userKeyValues.forEach { (k, v) ->
