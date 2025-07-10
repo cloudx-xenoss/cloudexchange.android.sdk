@@ -26,6 +26,7 @@ android {
 }
 
 dependencies {
+    implementation(files("libs/XorEnc-1.0.1-obf.jar"))
     implementation(libs.kotlin.reflect)
     implementation(libs.core.ktx)
     implementation(libs.kotlinx.coroutines.android)

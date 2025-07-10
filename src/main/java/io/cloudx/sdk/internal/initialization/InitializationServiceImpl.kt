@@ -27,7 +27,6 @@ import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
-import io.cloudx.sdk.internal.imp_tracker.XorEncryption
 import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
@@ -43,6 +42,7 @@ import org.json.JSONObject
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import androidx.core.content.edit
+import com.xor.XorEncryption
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.

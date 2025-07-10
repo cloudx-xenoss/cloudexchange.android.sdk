@@ -1,5 +1,6 @@
 package io.cloudx.sdk.internal.core.ad.source.bid
 
+import com.xor.XorEncryption
 import io.cloudx.sdk.Destroyable
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdNetwork
@@ -14,7 +15,6 @@ import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
-import io.cloudx.sdk.internal.imp_tracker.XorEncryption
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
