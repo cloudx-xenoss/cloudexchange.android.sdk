@@ -1,5 +1,7 @@
 package io.cloudx.sdk.internal.initialization
 
+import android.app.Activity
+import android.content.SharedPreferences
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.RoboMockkTest
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
@@ -11,6 +13,7 @@ import io.cloudx.sdk.internal.tracking.MetricsTracker
 import io.cloudx.sdk.mocks.MockConfigAPIWithPredefinedConfig
 import io.cloudx.sdk.mocks.MockConfigRequestProviderWithArbitraryValues
 import io.cloudx.sdk.mocks.MockAdapterFactoryResolver
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -21,6 +24,14 @@ class InitializationServiceImplTest : RoboMockkTest() {
 
     @Test
     fun serviceInitializedWhenConfigAPIRequestSuccessful() = runTest {
+        val mockPrefs = mockk<SharedPreferences> {
+            every { getString("pending_crash", any()) } returns null // or return valid JSON
+        }
+
+        val activity = mockk<Activity> {
+            every { getSharedPreferences("cloudx_crash_store", any()) } returns mockPrefs
+        }
+
         val initializationService = InitializationServiceImpl(
             configApi = MockConfigAPIWithPredefinedConfig(),
             provideConfigRequest = MockConfigRequestProviderWithArbitraryValues(),
@@ -33,7 +44,7 @@ class InitializationServiceImplTest : RoboMockkTest() {
             geoApi = GeoApi()
         )
 
-        val result = initializationService.initialize("random_app_key", activity = mockk())
+        val result = initializationService.initialize("random_app_key", activity)
 
         assert(result is Result.Success) {
             "expected Success result with config provided, got $result"
