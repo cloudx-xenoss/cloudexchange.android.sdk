@@ -5,10 +5,41 @@
 * Generate a new token with `read:packages` permission.
 * Use your GitHub username and token in the credentials block below.
 
-* The CloudX SDK is built and tested with:
-- `minSdkVersion = 21`
-- `compileSdkVersion = 35`
-- The host app must have a `minSdkVersion >= 21`.
+## 📦 CloudX SDK Compatibility
+
+### 🧩 Language Compatibility
+- **Kotlin version**: Built with `1.9.22`
+    - Host apps should use Kotlin `1.9.0+`
+- **Java compatibility**: Compiled to Java 8 bytecode (`jvmTarget = 1.8`)
+    - Fully compatible with Java-based host apps (no Kotlin required)
+
+### 📱 Android Compatibility
+- **Minimum SDK version**: `21`
+- **Compile SDK version**: `35`
+    - Host apps must set `minSdkVersion >= 21` to use the SDK.
+
+### 🛠️ Build Compatibility
+- **Gradle version**: `8.2`
+- **Android Gradle Plugin**: `8.2.2`
+    - Host apps using AGP `8.0+` and Gradle `8.0+` are fully supported.
+
+### 🧪 Tested Environment
+
+The SDK has been tested on projects with the following configurations:
+
+| Environment        | Version  |
+|--------------------|----------|
+| Kotlin             | 1.9.22   |
+| Java               | 1.8 & 11 |
+| AGP                | 8.2.2    |
+| Gradle             | 8.2      |
+| Android SDK API    | 21–35    |
+
+---
+
+> 💡 If your app uses older Kotlin, Gradle, or AGP versions and encounters issues, please consider upgrading or contact support for compatibility help.
+
+
 ### 1. Add GitHub Maven Repository
 In your project’s `settings.gradle` or `settings.gradle.kts`:
 
