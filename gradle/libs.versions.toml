@@ -35,6 +35,21 @@ converterGson = "2.11.0"
 gson = "2.10.1"
 
 [libraries]
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+ktor-client-android = { module ="io.ktor:ktor-client-android", version.ref = "ktor" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+google-advertisingid = "com.google.android.gms:play-services-ads-identifier:18.0.1"
+google-location = "com.google.android.gms:play-services-location:21.1.0"
+lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycle" }
+lifecycle-runtime = {  group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+startup = "androidx.startup:startup-runtime:1.1.1"
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
@@ -42,13 +57,9 @@ kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ve
 dokka-gradlePlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
-kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
-ktor-client-android = { module ="io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor"}
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -59,7 +70,6 @@ robolectric = "org.robolectric:robolectric:4.11.1"
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
@@ -71,24 +81,16 @@ preferences = "androidx.preference:preference-ktx:1.2.1"
 
 webkit = "androidx.webkit:webkit:1.10.0"
 customtabs = "androidx.browser:browser:1.7.0"
-startup = "androidx.startup:startup-runtime:1.1.1"
 
 # image loading
 glide = "com.github.bumptech.glide:glide:4.16.0"
 
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 
 androidx-annotation = "androidx.annotation:annotation:1.8.0"
 
 # TODO. Bundle
-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycle" }
-lifecycle-runtime = {  group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 
-google-advertisingid = "com.google.android.gms:play-services-ads-identifier:18.0.1"
-google-location = "com.google.android.gms:play-services-location:21.1.0"
 
 # Adapter network SDKs
 google-ads = "com.google.android.gms:play-services-ads:23.0.0"

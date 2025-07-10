@@ -5,6 +5,11 @@
 * Generate a new token with `read:packages` permission.
 * Use your GitHub username and token in the credentials block below.
 
+* The CloudX SDK is built and tested with:
+- `minSdkVersion = 21`
+- `targetSdkVersion = 34`
+- `compileSdkVersion = 34`
+- The host app must have a `minSdkVersion >= 21`.
 ### 1. Add GitHub Maven Repository
 In your project’s `settings.gradle` or `settings.gradle.kts`:
 
