@@ -25,12 +25,8 @@ mockk = "1.13.9"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
-material = "1.11.0"
-constraintlayout = "2.1.4"
 jacoco = "0.8.11"
 
-metaAudienceNetworkVersion = "6.17.0"
-mintegral = "16.7.71"
 converterGson = "2.11.0"
 gson = "2.10.1"
 
