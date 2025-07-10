@@ -1,15 +1,32 @@
 plugins {
-    id("library-conventions")
-    id("dokka-conventions")
+    id("com.android.library")
+    kotlin("android")
+
+    `maven-publish`
+
+    id("org.jetbrains.dokka")
+
     alias(libs.plugins.ksp)
     jacoco
-    id("cloudx-sdk-publishing-conventions")
 }
+
+private val releaseVariant = "release"
+// Read version from command line -PversionName=..., fallback to libs.sdkVersionName
+val resolvedVersion = project.findProperty("versionName") as String?
+    ?: libs.versions.sdkVersionName
 
 android {
     namespace = libs.versions.sdkPackageName.get()
 
+    compileSdk = 34
+
+
     defaultConfig {
+        minSdk = 21
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+
         buildConfigField("String", "SDK_VERSION_NAME", "\"${libs.versions.sdkVersionName.get()}\"")
         buildConfigField("long", "SDK_BUILD_TIMESTAMP", "${System.currentTimeMillis()}")
 
@@ -17,10 +34,49 @@ android {
         buildConfigField("String", "CLOUDX_ENDPOINT_CONFIG", """"$configEndpoint"""")
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
         debug {
             enableAndroidTestCoverage = true
             enableUnitTestCoverage = true
+        }
+    }
+    sourceSets["main"].kotlin {
+        srcDir("src/main/samples/kotlin")
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    testOptions {
+        animationsDisabled = true
+
+        // Tests are run in isolation if this is set but are slower. Comment if you want test to go faster but less precise
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
+
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
+    publishing {
+        singleVariant(releaseVariant) {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -45,6 +101,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
+
+//    testImplementation(libs.testUnit)
+//    androidTestImplementation(libs.testInstrumentation)
 }
 
 tasks.withType(Test::class) {
@@ -90,4 +149,60 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
     executionData.setFrom(files(
         fileTree(layout.buildDirectory) { include(listOf("**/*.exec", "**/*.ec")) }
     ))
+}
+
+publishing {
+    publications {
+
+        val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
+        version = versionFromTag
+
+        create<MavenPublication>("sdkRelease") {
+            groupId = "com.cloudx"
+            artifactId = "cloudx-sdk"
+            version = versionFromTag
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk")
+            credentials {
+                username = System.getenv("PAT_USERNAME")
+                password = System.getenv("PAT_TOKEN")
+            }
+        }
+    }
+}
+
+tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+    dokkaSourceSets.configureEach {
+        moduleName.set("CloudX SDK Android")
+
+        includes.from("dokka/module.md")
+
+        // Do not generate documentation for internal code.
+        perPackageOption {
+            matchingRegex.set("io.cloudx.sdk.internal.*")
+            suppress.set(true)
+        }
+    }
+}
+
+tasks.dokkaHtml {
+    outputDirectory.set(buildDir.resolve("dokka/html"))
+
+//    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+//        // Dokka's stylesheets and assets with conflicting names will be overriden.
+//        // In this particular case, logo-styles.css will be overriden and ktor-logo.png will
+//        // be added as an additional image asset
+//        // customAssets = listOf(file("dokka/logo-icon.svg"))
+//
+//        footerMessage = "© 2024 CloudX, Inc. All Rights Reserved"
+//    }
 }
