@@ -18,8 +18,7 @@ val resolvedVersion = project.findProperty("versionName") as String?
 android {
     namespace = libs.versions.sdkPackageName.get()
 
-    compileSdk = 34
-
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 21
