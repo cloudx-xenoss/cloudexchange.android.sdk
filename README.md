@@ -7,8 +7,7 @@
 
 * The CloudX SDK is built and tested with:
 - `minSdkVersion = 21`
-- `targetSdkVersion = 34`
-- `compileSdkVersion = 34`
+- `compileSdkVersion = 35`
 - The host app must have a `minSdkVersion >= 21`.
 ### 1. Add GitHub Maven Repository
 In your project’s `settings.gradle` or `settings.gradle.kts`:
