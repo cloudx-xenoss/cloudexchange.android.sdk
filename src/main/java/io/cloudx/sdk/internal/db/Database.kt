@@ -6,14 +6,14 @@ import androidx.room.RoomDatabase
 import io.cloudx.sdk.internal.ApplicationContext
 import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEvents
 import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEventDao
-import io.cloudx.sdk.internal.db.tracking.InitOperationStatus
-import io.cloudx.sdk.internal.db.tracking.InitOperationStatusDao
-import io.cloudx.sdk.internal.db.tracking.MetricDao
-import io.cloudx.sdk.internal.db.tracking.Placement
-import io.cloudx.sdk.internal.db.tracking.PlacementDao
-import io.cloudx.sdk.internal.db.tracking.Session
-import io.cloudx.sdk.internal.db.tracking.SessionDao
-import io.cloudx.sdk.internal.db.tracking.SpendMetric
+import io.cloudx.sdk.internal.db.tracking_legacy.InitOperationStatus
+import io.cloudx.sdk.internal.db.tracking_legacy.InitOperationStatusDao
+import io.cloudx.sdk.internal.db.tracking_legacy.MetricDao
+import io.cloudx.sdk.internal.db.tracking_legacy.Placement
+import io.cloudx.sdk.internal.db.tracking_legacy.PlacementDao
+import io.cloudx.sdk.internal.db.tracking_legacy.Session
+import io.cloudx.sdk.internal.db.tracking_legacy.SessionDao
+import io.cloudx.sdk.internal.db.tracking_legacy.SpendMetric
 
 @Database(
     entities = [

@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.db.tracking
+package io.cloudx.sdk.internal.db.tracking_legacy
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,6 +1,6 @@
 package io.cloudx.sdk.internal.tracking.dtoconverters
 
-import io.cloudx.sdk.internal.db.tracking.SessionWithMetrics
+import io.cloudx.sdk.internal.db.tracking_legacy.SessionWithMetrics
 import io.cloudx.sdk.internal.tracking.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
