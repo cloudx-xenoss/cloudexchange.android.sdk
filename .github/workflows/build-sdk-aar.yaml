@@ -55,6 +55,18 @@ jobs:
 #          PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
 #          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
 
+      - name: 🕵️ Log OSSRH and GPG Secrets (partially)
+        run: |
+          echo "🔐 OSSRH_USERNAME prefix: ${OSSRH_USERNAME:0:4}"
+          echo "🔐 OSSRH_PASSWORD is set: [${#OSSRH_PASSWORD}] characters"
+          echo "🔏 GPG_PRIVATE_KEY is set: $([ -z \"$GPG_PRIVATE_KEY\" ] && echo '❌ NO' || echo '✅ YES')"
+          echo "🔏 GPG_PRIVATE_KEY_PASSWORD is set: $([ -z \"$GPG_PRIVATE_KEY_PASSWORD\" ] && echo '❌ NO' || echo '✅ YES')"
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
+
       - name: 📦 Publish to Maven Central
         if: startsWith(github.ref, 'refs/tags/')
         run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json --info
