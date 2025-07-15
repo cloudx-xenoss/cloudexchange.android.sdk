@@ -101,8 +101,8 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
-//    testImplementation(libs.testUnit)
-//    androidTestImplementation(libs.testInstrumentation)
+    testImplementation(libs.bundles.test.unit)
+    androidTestImplementation(libs.bundles.test.instrumentation)
 }
 
 tasks.withType(Test::class) {
