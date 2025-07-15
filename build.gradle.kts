@@ -165,6 +165,34 @@ publishing {
             afterEvaluate {
                 from(components["release"])
             }
+
+            pom {
+                name.set("CloudX SDK")
+                description.set("An Android SDK for CloudX platform")
+                url.set("https://github.com/your-org/sdk") // Replace with actual repo
+
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("mirmuhsin")
+                        name.set("Mirmuhsin")
+                        email.set("you@example.com") // You can use a real email or dummy
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/your-org/sdk.git")
+                    developerConnection.set("scm:git:ssh://github.com/your-org/sdk.git")
+                    url.set("https://github.com/your-org/sdk")
+                }
+            }
+
         }
     }
 
