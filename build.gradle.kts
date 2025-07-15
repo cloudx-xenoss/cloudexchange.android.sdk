@@ -3,6 +3,7 @@ plugins {
     kotlin("android")
 
     `maven-publish`
+    signing
 
     id("org.jetbrains.dokka")
 
@@ -157,8 +158,8 @@ publishing {
         version = versionFromTag
 
         create<MavenPublication>("sdkRelease") {
-            groupId = "com.cloudx"
-            artifactId = "cloudx-sdk"
+            groupId = "io.cloudx"
+            artifactId = "sdk"
             version = versionFromTag
 
             afterEvaluate {
@@ -169,14 +170,22 @@ publishing {
 
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk")
+            name = "MavenCentral"
+            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
-                username = System.getenv("PAT_USERNAME")
-                password = System.getenv("PAT_TOKEN")
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
+}
+
+signing {
+    useInMemoryPgpKeys(
+        System.getenv("GPG_PRIVATE_KEY"),
+        System.getenv("GPG_PRIVATE_KEY_PASSWORD")
+    )
+    sign(publishing.publications["sdkRelease"])
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
