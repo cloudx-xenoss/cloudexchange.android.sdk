@@ -105,13 +105,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-
-    publishing {
-        singleVariant(releaseVariant) {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
 }
 
 dependencies {
