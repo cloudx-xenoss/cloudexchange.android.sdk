@@ -174,7 +174,7 @@ publishing {
             url = uri("https://central.sonatype.com/api/v1/publisher/maven")
             credentials {
                 username = "inej70"
-                password = String(Base64.getDecoder().decode(System.getenv("OSSRH_PASSWORD")))
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
