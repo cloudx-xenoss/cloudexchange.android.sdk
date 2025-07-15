@@ -2,14 +2,49 @@ plugins {
     id("com.android.library")
     kotlin("android")
 
-    `maven-publish`
-    signing
+    id("com.vanniktech.maven.publish") version "0.34.0"
 
     id("org.jetbrains.dokka")
 
     alias(libs.plugins.ksp)
     jacoco
 }
+
+import com.vanniktech.maven.publish.SonatypeHost
+
+        mavenPublishing {
+            // Use the new Central Publisher Portal (S01)
+            publishToMavenCentral(automaticRelease = true)
+            signAllPublications()
+            coordinates("io.cloudx", "sdk", "0.0.1.28") // group, artifact, version
+
+            pom {
+                name.set("CloudX SDK")
+                description.set("An Android SDK for the CloudX platform")
+                inceptionYear.set("2025")
+                url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+                licenses {
+                    license {
+                        name.set("Elastic License 2.0")
+                        url.set("https://www.elastic.co/licensing/elastic-license")
+                        distribution.set("repo")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("mirmuhsin")
+                        name.set("Mirmukhsin Sodikov")
+                        url.set("https://github.com/amirXenoss")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+                    connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+                }
+            }
+        }
+
 
 private val releaseVariant = "release"
 // Read version from command line -PversionName=..., fallback to libs.sdkVersionName
@@ -151,42 +186,24 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
     ))
 }
 
-publishing {
-    publications {
-
-        val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
-        version = versionFromTag
-
-        create<MavenPublication>("sdkRelease") {
-            groupId = "io.cloudx"
-            artifactId = "sdk"
-            version = versionFromTag
-
-            afterEvaluate {
-                from(components["release"])
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "MavenCentral"
-            url = uri("https://central.sonatype.com/api/v1/publisher/maven")
-            credentials {
-                username = "inej70"
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
-}
-
-signing {
-    useInMemoryPgpKeys(
-        System.getenv("GPG_PRIVATE_KEY"),
-        System.getenv("GPG_PRIVATE_KEY_PASSWORD")
-    )
-    sign(publishing.publications["sdkRelease"])
-}
+//publishing {
+//    publications {
+//
+//        val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
+//        version = versionFromTag
+//
+//        create<MavenPublication>("sdkRelease") {
+//            groupId = "io.cloudx"
+//            artifactId = "sdk"
+//            version = versionFromTag
+//
+//            afterEvaluate {
+//                from(components["release"])
+//            }
+//        }
+//    }
+//
+//}
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {
