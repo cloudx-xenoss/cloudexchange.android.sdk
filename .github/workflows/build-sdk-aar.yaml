@@ -57,7 +57,7 @@ jobs:
 
       - name: 📦 Publish to Maven Central
         if: startsWith(github.ref, 'refs/tags/')
-        run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json
+        run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json --info
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
