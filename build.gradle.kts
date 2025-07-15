@@ -10,40 +10,38 @@ plugins {
     jacoco
 }
 
-import com.vanniktech.maven.publish.SonatypeHost
+mavenPublishing {
+    // Use the new Central Publisher Portal (S01)
+    publishToMavenCentral(automaticRelease = true)
+    signAllPublications()
+    coordinates("io.cloudx", "sdk", "0.0.1.28") // group, artifact, version
 
-        mavenPublishing {
-            // Use the new Central Publisher Portal (S01)
-            publishToMavenCentral(automaticRelease = true)
-            signAllPublications()
-            coordinates("io.cloudx", "sdk", "0.0.1.28") // group, artifact, version
-
-            pom {
-                name.set("CloudX SDK")
-                description.set("An Android SDK for the CloudX platform")
-                inceptionYear.set("2025")
-                url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
-                licenses {
-                    license {
-                        name.set("Elastic License 2.0")
-                        url.set("https://www.elastic.co/licensing/elastic-license")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("mirmuhsin")
-                        name.set("Mirmukhsin Sodikov")
-                        url.set("https://github.com/amirXenoss")
-                    }
-                }
-                scm {
-                    url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
-                    connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
-                }
+    pom {
+        name.set("CloudX SDK")
+        description.set("An Android SDK for the CloudX platform")
+        inceptionYear.set("2025")
+        url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+        licenses {
+            license {
+                name.set("Elastic License 2.0")
+                url.set("https://www.elastic.co/licensing/elastic-license")
+                distribution.set("repo")
             }
         }
+        developers {
+            developer {
+                id.set("mirmuhsin")
+                name.set("Mirmukhsin Sodikov")
+                url.set("https://github.com/amirXenoss")
+            }
+        }
+        scm {
+            url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+            connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+            developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+        }
+    }
+}
 
 
 private val releaseVariant = "release"
@@ -173,7 +171,8 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
         html.required.set(true)
     }
     sourceDirectories.setFrom(layout.projectDirectory.dir("src/main/java"))
-    classDirectories.setFrom(files(
+    classDirectories.setFrom(
+        files(
         fileTree(layout.buildDirectory.dir("intermediates/javac")) {
             exclude(exclusions)
         },
@@ -181,7 +180,8 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
             exclude(exclusions)
         }
     ))
-    executionData.setFrom(files(
+    executionData.setFrom(
+        files(
         fileTree(layout.buildDirectory) { include(listOf("**/*.exec", "**/*.ec")) }
     ))
 }
