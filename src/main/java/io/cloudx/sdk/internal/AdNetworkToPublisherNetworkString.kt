@@ -9,7 +9,7 @@ internal fun AdNetwork?.toPublisherNetworkString(): String = when (this) {
     AdNetwork.TestNetwork -> "TestNetwork"
     AdNetwork.Meta -> "Meta"
     AdNetwork.Mintegral -> "Mintegral"
-    AdNetwork.CloudXDSP -> "CloudX"
+    AdNetwork.CloudX -> "CloudX"
     AdNetwork.CloudXSecond -> "CloudX2"
     is AdNetwork.Unknown -> name
     null -> ""

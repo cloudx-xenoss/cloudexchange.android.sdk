@@ -14,7 +14,7 @@ mavenPublishing {
     // Use the new Central Publisher Portal (S01)
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
-    coordinates("io.cloudx", "sdk", "0.0.1.28") // group, artifact, version
+    coordinates("io.cloudx", "sdk", "0.0.1.34") // group, artifact, version
 
     pom {
         name.set("CloudX SDK")
@@ -30,9 +30,9 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("mirmuhsin")
-                name.set("Mirmukhsin Sodikov")
-                url.set("https://github.com/amirXenoss")
+                id.set("CloudX")
+                name.set("CloudX Team")
+                url.set("https://cloudx.io")
             }
         }
         scm {
@@ -178,25 +178,6 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
         fileTree(layout.buildDirectory) { include(listOf("**/*.exec", "**/*.ec")) }
     ))
 }
-
-//publishing {
-//    publications {
-//
-//        val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
-//        version = versionFromTag
-//
-//        create<MavenPublication>("sdkRelease") {
-//            groupId = "io.cloudx"
-//            artifactId = "sdk"
-//            version = versionFromTag
-//
-//            afterEvaluate {
-//                from(components["release"])
-//            }
-//        }
-//    }
-//
-//}
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
     dokkaSourceSets.configureEach {

@@ -215,7 +215,7 @@ private fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
             val priceRaw = bid.priceRaw ?: "0.0"
             val adNetworkOriginal = bid.adNetwork
             val adNetwork = when (adNetworkOriginal) {
-                AdNetwork.CloudXSecond -> AdNetwork.CloudXDSP
+                AdNetwork.CloudXSecond -> AdNetwork.CloudX
                 else -> adNetworkOriginal
             }
 

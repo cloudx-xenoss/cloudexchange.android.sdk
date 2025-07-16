@@ -28,7 +28,7 @@ internal fun AdNetwork.toBidRequestString() = when (this) {
     AdNetwork.Meta -> "meta"
     AdNetwork.Mintegral -> "mintegral"
     AdNetwork.TestNetwork -> "testbidder"
-    AdNetwork.CloudXDSP -> "cloudx"
+    AdNetwork.CloudX -> "cloudx"
     AdNetwork.CloudXSecond -> "cloudxsecond"
     is AdNetwork.Unknown -> this.name
 }

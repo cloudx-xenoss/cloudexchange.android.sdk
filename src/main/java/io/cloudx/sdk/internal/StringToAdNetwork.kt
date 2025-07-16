@@ -10,7 +10,7 @@ internal fun String.toAdNetwork(): AdNetwork = when (this) {
     "googleAdManager" -> AdNetwork.GoogleAdManager
     "meta" -> AdNetwork.Meta
     "mintegral" -> AdNetwork.Mintegral
-    "cloudx" -> AdNetwork.CloudXDSP
+    "cloudx" -> AdNetwork.CloudX
     "cloudxsecond" -> AdNetwork.CloudXSecond
     else -> AdNetwork.Unknown(name = this)
 }
