@@ -14,7 +14,7 @@ mavenPublishing {
     // Use the new Central Publisher Portal (S01)
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
-    coordinates("io.cloudx", "sdk", "0.0.1.34") // group, artifact, version
+    coordinates("io.cloudx", "sdk", "0.0.1.35") // group, artifact, version
 
     pom {
         name.set("CloudX SDK")
