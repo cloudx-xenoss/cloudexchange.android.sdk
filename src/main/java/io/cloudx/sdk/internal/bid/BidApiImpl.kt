@@ -87,6 +87,7 @@ internal class BidApiImpl(
 
                 else -> {
                     println("Unexpected response status, retrying: ${response.status.value}")
+                    Logger.e("MainActivity", "Unexpected response status: ${response.status.value}")
                     BidAttemptResult.HardError(response.status.value, responseBody)
                 }
             }

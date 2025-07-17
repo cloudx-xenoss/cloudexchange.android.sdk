@@ -68,11 +68,18 @@ internal class InitializationServiceImpl(
 
     private val mutex = Mutex()
 
+
+    fun isSdkRelatedError(throwable: Throwable): Boolean {
+        return throwable.stackTrace.any { it.className.startsWith("io.cloudx.sdk") }
+    }
+
     private fun registerSdkCrashHandler() {
         val current = Thread.getDefaultUncaughtExceptionHandler()
         if (current !is SdkCrashHandler) {  // <---- Only set if not already set by us
             Thread.setDefaultUncaughtExceptionHandler(
                 SdkCrashHandler { thread, throwable ->
+                    if (!isSdkRelatedError(throwable)) return@SdkCrashHandler
+
                     config?.let {
                         val sessionId = it.sessionId
                         val errorMessage = throwable.message
