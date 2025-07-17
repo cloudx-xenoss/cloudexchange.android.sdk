@@ -47,12 +47,35 @@ jobs:
       - name: 🛠️ Build AAR
         run: ./gradlew clean assembleRelease -Pcloudx.endpoint.config=https://example.com/config.json
 
-      - name: 📦 Publish to GitHub Packages
-        if: startsWith(github.ref, 'refs/tags/')
-        run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json
+#      Removed for now, as we are not publishing to GitHub Packages
+#      - name: 📦 Publish to GitHub Packages
+#        if: startsWith(github.ref, 'refs/tags/')
+#        run: ./gradlew publish -Pcloudx.endpoint.config=https://example.com/config.json
+#        env:
+#          PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
+#          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+      - name: 🕵️ Log Maven Central and GPG Secrets (partially)
+        run: |
+          echo "🔐 mavenCentralUsername: ${ORG_GRADLE_PROJECT_mavenCentralUsername:0:4}"
+          echo "🔐 mavenCentralPassword is set: [${#ORG_GRADLE_PROJECT_mavenCentralPassword}] characters"
+          echo "🔏 signingInMemoryKey is set: $([ -z \"$ORG_GRADLE_PROJECT_signingInMemoryKey\" ] && echo '❌ NO' || echo '✅ YES')"
+          echo "🔏 signingInMemoryKeyPassword is set: $([ -z \"$ORG_GRADLE_PROJECT_signingInMemoryKeyPassword\" ] && echo '❌ NO' || echo '✅ YES')"
         env:
-          PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+
+      - name: 📦 Publish to Maven Central
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./gradlew publishToMavenCentral --no-daemon --stacktrace -Pcloudx.endpoint.config=https://example.com/config.json
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+
 
       - name: 📦 Upload AAR artifact
         uses: actions/upload-artifact@v4

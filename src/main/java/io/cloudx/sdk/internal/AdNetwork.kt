@@ -9,7 +9,7 @@ internal sealed class AdNetwork {
     data object GoogleAdManager : AdNetwork()
     data object Meta : AdNetwork()
     data object Mintegral : AdNetwork()
-    data object CloudXDSP : AdNetwork()
+    data object CloudX : AdNetwork()
     data object CloudXSecond : AdNetwork()
     data class Unknown(val name: String) : AdNetwork()
 }

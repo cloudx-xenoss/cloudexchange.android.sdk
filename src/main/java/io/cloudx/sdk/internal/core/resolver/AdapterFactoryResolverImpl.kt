@@ -91,8 +91,8 @@ private fun AdNetwork.toAdapterPackagePrefix(): String? = when (this) {
     AdNetwork.TestNetwork -> "testbidnetwork"
     AdNetwork.Meta -> "meta"
     AdNetwork.Mintegral -> "mintegral"
-    AdNetwork.CloudXDSP -> "cloudxdsp"
-    AdNetwork.CloudXSecond -> "cloudxdsp"
+    AdNetwork.CloudX -> "cloudx"
+    AdNetwork.CloudXSecond -> "cloudx"
     is AdNetwork.Unknown -> null
 }?.let {
     "io.cloudx.adapter.$it."

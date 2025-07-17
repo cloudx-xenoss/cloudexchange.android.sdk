@@ -2,13 +2,47 @@ plugins {
     id("com.android.library")
     kotlin("android")
 
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.34.0"
 
     id("org.jetbrains.dokka")
 
     alias(libs.plugins.ksp)
     jacoco
 }
+
+mavenPublishing {
+    // Use the new Central Publisher Portal (S01)
+    publishToMavenCentral(automaticRelease = true)
+    signAllPublications()
+    coordinates("io.cloudx", "sdk", "0.0.1.34") // group, artifact, version
+
+    pom {
+        name.set("CloudX SDK")
+        description.set("An Android SDK for the CloudX platform")
+        inceptionYear.set("2025")
+        url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+        licenses {
+            license {
+                name.set("Elastic License 2.0")
+                url.set("https://www.elastic.co/licensing/elastic-license")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("CloudX")
+                name.set("CloudX Team")
+                url.set("https://cloudx.io")
+            }
+        }
+        scm {
+            url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+            connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+            developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+        }
+    }
+}
+
 
 private val releaseVariant = "release"
 // Read version from command line -PversionName=..., fallback to libs.sdkVersionName
@@ -71,13 +105,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-
-    publishing {
-        singleVariant(releaseVariant) {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
 }
 
 dependencies {
@@ -101,8 +128,8 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
-//    testImplementation(libs.testUnit)
-//    androidTestImplementation(libs.testInstrumentation)
+    testImplementation(libs.bundles.test.unit)
+    androidTestImplementation(libs.bundles.test.instrumentation)
 }
 
 tasks.withType(Test::class) {
@@ -137,7 +164,8 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
         html.required.set(true)
     }
     sourceDirectories.setFrom(layout.projectDirectory.dir("src/main/java"))
-    classDirectories.setFrom(files(
+    classDirectories.setFrom(
+        files(
         fileTree(layout.buildDirectory.dir("intermediates/javac")) {
             exclude(exclusions)
         },
@@ -145,38 +173,10 @@ tasks.register<JacocoReport>("jacocoDebugCodeCoverage") {
             exclude(exclusions)
         }
     ))
-    executionData.setFrom(files(
+    executionData.setFrom(
+        files(
         fileTree(layout.buildDirectory) { include(listOf("**/*.exec", "**/*.ec")) }
     ))
-}
-
-publishing {
-    publications {
-
-        val versionFromTag = System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00"
-        version = versionFromTag
-
-        create<MavenPublication>("sdkRelease") {
-            groupId = "com.cloudx"
-            artifactId = "cloudx-sdk"
-            version = versionFromTag
-
-            afterEvaluate {
-                from(components["release"])
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk")
-            credentials {
-                username = System.getenv("PAT_USERNAME")
-                password = System.getenv("PAT_TOKEN")
-            }
-        }
-    }
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {

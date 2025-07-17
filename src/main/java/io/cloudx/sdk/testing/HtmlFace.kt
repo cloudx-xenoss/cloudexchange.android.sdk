@@ -4,7 +4,7 @@ import io.cloudx.sdk.internal.AdNetwork
 
 internal fun testMethod(id: String, adNetwork: AdNetwork, actualAdm: String): String {
 
-    if (adNetwork == AdNetwork.CloudXDSP) {
+    if (adNetwork == AdNetwork.CloudX) {
         println("AdNetwork is CloudX")
 
         val htmlColors = listOf("red", "green", "blue", "yellow", "purple", "orange", "pink", "brown", "black")

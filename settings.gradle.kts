@@ -1,9 +1,13 @@
 pluginManagement {
-    includeBuild("build-logic")
     repositories {
         google()
-        mavenCentral()
         gradlePluginPortal()
+        mavenCentral()
+    }
+    plugins {
+        id("com.android.library") version "8.2.2"
+        kotlin("android") version "1.9.22"
+        id("org.jetbrains.dokka") version "1.9.20"
     }
 }
 
