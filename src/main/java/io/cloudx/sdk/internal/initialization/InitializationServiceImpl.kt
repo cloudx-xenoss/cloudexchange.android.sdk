@@ -43,6 +43,7 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import androidx.core.content.edit
 import com.xor.XorEncryption
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
@@ -53,6 +54,7 @@ internal class InitializationServiceImpl(
     private val adapterResolver: AdapterFactoryResolver,
     private val privacyService: PrivacyService,
     private val metricsTracker: MetricsTracker,
+    private val metricsTrackerNew: MetricsTrackerNew,
     private val eventTracker: EventTracker,
     private val provideAppInfo: AppInfoProvider,
     private val provideDeviceInfo: DeviceInfoProvider,
@@ -157,16 +159,17 @@ internal class InitializationServiceImpl(
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
-                val pendingCrash = getPendingCrashIfAny()
-                pendingCrash?.let {
-                    sendErrorEvent(cfg, appKey, it)
-                }
+
                 ResolvedEndpoints.resolveFrom(cfg)
                 SdkKeyValueState.setKeyValuePaths(cfg.keyValuePaths)
 
                 metricsTracker.init(appKey, cfg)
+                metricsTrackerNew.start(cfg)
 
-                val geoDataResult = geoApi.fetchGeoHeaders(ResolvedEndpoints.geoEndpoint)
+                val geoDataResult: Result<Map<String, String>, Error>
+                val geoRequestMillis = measureTimeMillis {
+                    geoDataResult = geoApi.fetchGeoHeaders(ResolvedEndpoints.geoEndpoint)
+                }
                 if (geoDataResult is Result.Success) {
                     val headersMap = geoDataResult.value
 
@@ -191,6 +194,11 @@ internal class InitializationServiceImpl(
                     GeoInfoHolder.setGeoInfo(geoInfo)
 
                     sendInitSDKEvent(cfg, appKey)
+
+                    val pendingCrash = getPendingCrashIfAny()
+                    pendingCrash?.let {
+                        sendErrorEvent(cfg, appKey, it)
+                    }
                 }
 
                 val factories = resolveAdapters(cfg)
@@ -199,7 +207,7 @@ internal class InitializationServiceImpl(
                 initAdFactory(appKeyOverride, cfg, factories)
                 initializeAdapterNetworks(cfg, activity)
 
-                MatcherRegistry.registerMatchers()
+                metricsTrackerNew.trackGeoRequest(geoRequestMillis)
             }
 
             metricsTracker.initOperationStatus(
@@ -211,6 +219,8 @@ internal class InitializationServiceImpl(
                     sessionId = this.config?.sessionId
                 )
             )
+
+            metricsTrackerNew.trackInitSdkRequest(configApiRequestMillis)
 
             configApiResult
         }
@@ -312,14 +322,16 @@ internal class InitializationServiceImpl(
         val payload = TrackingFieldResolver.buildPayload(eventId)
         val accountId = TrackingFieldResolver.getAccountId()
 
+
         if (payload != null && accountId != null) {
+            metricsTrackerNew.setBasicData(sessionId, payload, accountId)
+
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracker.send(impressionId, campaignId, 1, EventType.SDK_INIT)
+            eventTracker.send(impressionId, campaignId, "1", EventType.SDK_INIT)
         }
     }
-
 
     private suspend fun sendErrorEvent(
         cfg: Config,
@@ -360,14 +372,13 @@ internal class InitializationServiceImpl(
         var payload = TrackingFieldResolver.buildPayload(eventId)
         payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")?.plus(pendingCrashReport.errorDetails)
 
-        println("hop: InitializationServiceImpl sendErrorEvent payload: $payload")
         val accountId = TrackingFieldResolver.getAccountId()
 
         if (payload != null && accountId != null) {
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracker.send(impressionId, campaignId, 1, EventType.SDK_ERROR)
+            eventTracker.send(impressionId, campaignId, "1", EventType.SDK_ERROR)
         }
     }
 }

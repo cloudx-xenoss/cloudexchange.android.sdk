@@ -13,7 +13,7 @@ internal interface EventTracker {
     fun send(
         encoded: String,
         campaignId: String,
-        eventValue: Int,
+        eventValue: String,
         eventType: EventType
     )
 }

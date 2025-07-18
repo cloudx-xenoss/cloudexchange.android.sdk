@@ -162,7 +162,7 @@ private class BidAdSourceImpl<T : Destroyable>(
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracking.send(impressionId, campaignId, 1, EventType.BID_REQUEST)
+            eventTracking.send(impressionId, campaignId, "1", EventType.BID_REQUEST)
         }
 
         return when (result) {
