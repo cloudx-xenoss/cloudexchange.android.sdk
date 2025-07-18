@@ -34,9 +34,11 @@ internal class EventTrackerBulkApiImpl(
         CloudXLogger.info("MainActivity", "Tracking: Sending Bulk ${items.count()} events")
 
         return try {
+            val requestJson = items.toJson()
+            println("EventTrackingBulk Request JSON: $requestJson")
             val response = httpClient.post(endpointUrl) {
                 timeout { requestTimeoutMillis = timeoutMillis }
-                setBody(items.toJson())
+                setBody(requestJson)
                 contentType(ContentType.Application.Json)
 
                 retry {

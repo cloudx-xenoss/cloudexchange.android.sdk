@@ -325,7 +325,8 @@ internal class InitializationServiceImpl(
 
 
         if (payload != null && accountId != null) {
-            metricsTrackerNew.setBasicData(sessionId, accountId, payload)
+            val basePayload = payload.replace(eventId, "{eventId}")
+            metricsTrackerNew.setBasicData(sessionId, accountId, basePayload)
 
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)

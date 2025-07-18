@@ -111,8 +111,9 @@ internal class MetricsTrackerNewImpl(
 
     // Build a single EventAM for one metric
     private fun buildEvent(metric: MetricsEvent): EventAM {
+        val eventId = metric.auctionId
         val metricDetail = "${metric.counter}/${metric.totalLatency}"
-        val payload = "$basePayload;${metric.metricName};$metricDetail"
+        val payload = "$basePayload;${metric.metricName};$metricDetail".replace("{eventId}", eventId)
         Log.d("MetricsTrackerNewImpl", "Building event for metric: ${metric.metricName} with payload: $payload")
 
         val secret = XorEncryption.generateXorSecret(accountId)
