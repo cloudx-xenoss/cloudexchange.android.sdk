@@ -230,6 +230,7 @@ internal class InitializationServiceImpl(
         config = null
         factories = null
         adFactory = null
+        metricsTrackerNew.stop()
     }
 
     private var factories: BidAdNetworkFactories? = null
