@@ -4,7 +4,7 @@ import io.cloudx.sdk.internal.GlobalScopes
 import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.Database
-import io.cloudx.sdk.internal.imp_tracker.EventTrackerBulkApi
+import io.cloudx.sdk.internal.imp_tracker.bulk.EventTrackerBulkApi
 
 
 internal interface MetricsTrackerNew {

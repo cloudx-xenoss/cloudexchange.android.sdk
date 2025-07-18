@@ -324,7 +324,7 @@ internal class InitializationServiceImpl(
 
 
         if (payload != null && accountId != null) {
-            metricsTrackerNew.setBasicData(sessionId, payload, accountId)
+            metricsTrackerNew.setBasicData(sessionId, accountId, payload)
 
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
@@ -370,7 +370,8 @@ internal class InitializationServiceImpl(
         TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
 
         var payload = TrackingFieldResolver.buildPayload(eventId)
-        payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")?.plus(pendingCrashReport.errorDetails)
+        payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")
+            ?.plus(pendingCrashReport.errorDetails)
 
         val accountId = TrackingFieldResolver.getAccountId()
 

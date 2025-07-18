@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.imp_tracker
+package io.cloudx.sdk.internal.imp_tracker.bulk
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Error
@@ -28,12 +28,4 @@ internal fun EventTrackerBulkApi(
 ): EventTrackerBulkApi = EventTrackerBulkApiImpl(
     timeoutMillis = timeoutMillis,
     httpClient = httpClient
-)
-
-data class EventAM(
-    val impression: String,     // impression
-    val campaignId: String,  // campaignId
-    val eventValue: String,     // "N/A"
-    val eventName: String,   // eventName
-    val type: String,   // eventName
 )

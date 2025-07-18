@@ -8,8 +8,8 @@ import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.CloudXDb
 import io.cloudx.sdk.internal.db.metrics.MetricsEvent
-import io.cloudx.sdk.internal.imp_tracker.EventAM
-import io.cloudx.sdk.internal.imp_tracker.EventTrackerBulkApi
+import io.cloudx.sdk.internal.imp_tracker.bulk.EventAM
+import io.cloudx.sdk.internal.imp_tracker.bulk.EventTrackerBulkApi
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -38,7 +38,7 @@ internal class MetricsTrackerNewImpl(
 
     override fun start(config: Config) {
         val cycleDurationInSeconds = 20L
-        endpoint = "https://tracker-dev.cloudx.io/t/bulk?debug=true"
+        endpoint = "https://tracker-stage.cloudx.io/t/bulk?debug=true"
 
         Log.d("MetricsTrackerNewImpl", "Starting metrics tracker with cycle duration: $cycleDurationInSeconds seconds")
         metricsSendJob?.cancel()
@@ -113,6 +113,7 @@ internal class MetricsTrackerNewImpl(
     private fun buildEvent(metric: MetricsEvent): EventAM {
         val metricDetail = "${metric.counter}/${metric.totalLatency}"
         val payload = "$basePayload;${metric.metricName};$metricDetail"
+        Log.d("MetricsTrackerNewImpl", "Building event for metric: ${metric.metricName} with payload: $payload")
 
         val secret = XorEncryption.generateXorSecret(accountId)
         val campaignId = XorEncryption.generateCampaignIdBase64(accountId)

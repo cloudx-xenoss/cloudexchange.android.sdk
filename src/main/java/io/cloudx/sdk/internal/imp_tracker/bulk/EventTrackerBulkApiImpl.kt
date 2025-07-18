@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.imp_tracker
+package io.cloudx.sdk.internal.imp_tracker.bulk
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.CloudXLogger
@@ -7,12 +7,12 @@ import io.cloudx.sdk.internal.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.retry
 import io.ktor.client.plugins.timeout
-import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import java.net.URLEncoder
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 internal class EventTrackerBulkApiImpl(
     private val timeoutMillis: Long,
@@ -22,8 +22,7 @@ internal class EventTrackerBulkApiImpl(
     private val tag = "EventTrackingApi"
 
     override suspend fun send(
-        endpointUrl: String,
-        items: List<EventAM>
+        endpointUrl: String, items: List<EventAM>
     ): Result<Unit, Error> {
 
         Logger.d(tag, buildString {
@@ -37,8 +36,8 @@ internal class EventTrackerBulkApiImpl(
         return try {
             val response = httpClient.post(endpointUrl) {
                 timeout { requestTimeoutMillis = timeoutMillis }
-                parameter("debug", true)
-                setBody(mapOf("items" to items))
+                setBody(items.toJson())
+                contentType(ContentType.Application.Json)
 
                 retry {
                     retryOnServerErrors(maxRetries = 3)
