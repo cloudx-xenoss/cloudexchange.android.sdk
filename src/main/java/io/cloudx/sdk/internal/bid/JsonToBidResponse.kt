@@ -106,7 +106,7 @@ private fun JSONArray.toBid(auctionId: String): List<Bid> {
 
 private fun JSONObject.getAdNetwork(): AdNetwork =
     getJSONObject(EXT)
-        .getJSONObject(CLOUDX)
+        .getJSONObject("prebid")
         .getJSONObject(META)
         .getString(ADAPTER_CODE)
         .toAdNetwork()
