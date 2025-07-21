@@ -24,6 +24,9 @@ internal class MetricsTrackerNewImpl(
     private val db: CloudXDb
 ) : MetricsTrackerNew {
 
+    private var metricConfig: Config.MetricsConfig? = null
+    private var sendInternalInSeconds: Long = 1000L
+
     private var endpoint: String? = null
     private var metricsSendJob: Job? = null
     private var sessionId: String = ""
@@ -37,14 +40,20 @@ internal class MetricsTrackerNewImpl(
     }
 
     override fun start(config: Config) {
-        val cycleDurationInSeconds = 20L
-        endpoint = "https://tracker-stage.cloudx.io/t/bulk?debug=true"
+        metricConfig = config.metrics
+        if (metricConfig == null) {
+            Log.w("MetricsTrackerNewImpl", "Metrics configuration is null, skipping metrics tracking")
+            return
+        }
 
-        Log.d("MetricsTrackerNewImpl", "Starting metrics tracker with cycle duration: $cycleDurationInSeconds seconds")
+        endpoint = "${config.trackingEndpointUrl}/bulk?debug=true"
+        sendInternalInSeconds = config.metrics?.sendIntervalSeconds ?: 60L
+
+        Log.d("MetricsTrackerNewImpl", "Starting metrics tracker with cycle duration: $sendInternalInSeconds seconds")
         metricsSendJob?.cancel()
         metricsSendJob = scope.launch {
             while (true) {
-                delay(cycleDurationInSeconds * 1000)
+                delay(sendInternalInSeconds * 1000)
                 trySendingPendingMetrics()
             }
         }
@@ -75,9 +84,30 @@ internal class MetricsTrackerNewImpl(
             }
         }
     }
-    override fun trackInitSdkRequest(latency: Long) = trackMetric(MetricsType.SDK_INIT, latency)
-    override fun trackGeoRequest(latency: Long) = trackMetric(MetricsType.GEO_API, latency)
-    override fun trackBidRequest(latency: Long) = trackMetric(MetricsType.BID_REQUEST, latency)
+    override fun trackInitSdkRequest(latency: Long) {
+        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsInitSdkReqEnabled == true) {
+            Log.d("MetricsTrackerNewImpl", "Tracking SDK init request with latency: $latency ms")
+            trackMetric(MetricsType.SDK_INIT, latency)
+        } else {
+            Log.w("MetricsTrackerNewImpl", "SDK init request tracking is disabled in config")
+        }
+    }
+    override fun trackGeoRequest(latency: Long) {
+        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsGeoReqEnabled == true) {
+            Log.d("MetricsTrackerNewImpl", "Tracking Geo API request with latency: $latency ms")
+            trackMetric(MetricsType.GEO_API, latency)
+        } else {
+            Log.w("MetricsTrackerNewImpl", "Geo API request tracking is disabled in config")
+        }
+    }
+    override fun trackBidRequest(latency: Long) {
+        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsBidReqEnabled == true) {
+            Log.d("MetricsTrackerNewImpl", "Tracking Bid API request with latency: $latency ms")
+            trackMetric(MetricsType.BID_REQUEST, latency)
+        } else {
+            Log.w("MetricsTrackerNewImpl", "Bid API request tracking is disabled in config")
+        }
+    }
 
     // Add more API metric tracking methods as needed using the above pattern
 
