@@ -2,6 +2,7 @@ package io.cloudx.sdk.internal.initialization
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdType
@@ -27,7 +28,6 @@ import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
-import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.AdEventApi
@@ -80,10 +80,17 @@ internal class InitializationServiceImpl(
                         val errorMessage = throwable.message
                         val stackTrace = throwable.stackTraceToString()
 
+                        val sdkVersion = BuildConfig.SDK_VERSION_NAME
+                        val osVersion = Build.VERSION.SDK_INT
+                        val testGroupName = ResolvedEndpoints.testGroupName
+
                         val pendingReport = PendingCrashReport(
                             sessionId = sessionId,
                             errorMessage = errorMessage ?: "Unknown error",
-                            errorDetails = stackTrace
+                            errorDetails = stackTrace,
+                            sdkVersion = sdkVersion,
+                            osVersion = osVersion,
+                            testGroupName = testGroupName
                         )
 
                         savePendingCrashReport(activity, pendingReport)
@@ -97,6 +104,9 @@ internal class InitializationServiceImpl(
         val sessionId: String,
         val errorMessage: String,
         val errorDetails: String,
+        val sdkVersion: String,
+        val osVersion: Int,
+        val testGroupName: String
     )
 
     private fun PendingCrashReport.toJson(): JSONObject {
@@ -104,6 +114,9 @@ internal class InitializationServiceImpl(
             put("sessionId", sessionId)
             put("errorMessage", errorMessage)
             put("errorDetails", errorDetails)
+            put("sdkVersion", sdkVersion)
+            put("osVersion", osVersion)
+            put("testGroupName", testGroupName)
         }
     }
 
@@ -123,7 +136,10 @@ internal class InitializationServiceImpl(
             PendingCrashReport(
                 sessionId = json.getString("sessionId"),
                 errorMessage = json.getString("errorMessage"),
-                errorDetails = json.getString("errorDetails")
+                errorDetails = json.getString("errorDetails"),
+                sdkVersion = json.getString("sdkVersion"),
+                osVersion = json.getInt("osVersion"),
+                testGroupName = json.getString("testGroupName")
             )
         }
 
@@ -341,15 +357,17 @@ internal class InitializationServiceImpl(
         pendingCrashReport: PendingCrashReport
     ) {
         val deviceInfo = provideDeviceInfo()
-        val sdkVersion = BuildConfig.SDK_VERSION_NAME
+        val sdkVersion = pendingCrashReport.sdkVersion
+        val osVersion = pendingCrashReport.osVersion
         val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
         val sessionId = pendingCrashReport.sessionId
+        val testGroupName = pendingCrashReport.testGroupName
 
         TrackingFieldResolver.setSessionConstData(
             sessionId,
             sdkVersion,
             deviceType,
-            ResolvedEndpoints.testGroupName
+            testGroupName
         )
         TrackingFieldResolver.setConfig(cfg)
 
@@ -360,7 +378,8 @@ internal class InitializationServiceImpl(
             placementName = "",
             lineItems = emptyList(),
             accountId = cfg.accountId ?: "",
-            appKey = appKey
+            appKey = appKey,
+            osVersionOld = osVersion,
         )
         if (activity == null) return
         val bidRequestProvider = BidRequestProvider(

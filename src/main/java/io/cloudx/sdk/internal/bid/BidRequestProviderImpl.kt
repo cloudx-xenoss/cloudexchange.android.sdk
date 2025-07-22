@@ -5,7 +5,6 @@ import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
-import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.connectionstatus.ConnectionType
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfo
@@ -27,7 +26,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Date
 import java.util.TimeZone
-import java.util.UUID
 
 internal class BidRequestProviderImpl(
     private val context: Context,
@@ -112,7 +110,7 @@ internal class BidRequestProviderImpl(
                     put("model", deviceInfo.model)
                     put("hwv", deviceInfo.hwVersion)
                     put("os", deviceInfo.os)
-                    put("osv", deviceInfo.osVersion)
+                    put("osv", params.osVersionOld ?: deviceInfo.osVersion)
 
                     put("ua", provideUserAgent())
 
