@@ -1,10 +1,5 @@
 ## **🚀CloudX Android SDK Installation Guide**
 
-### Prerequisite: Get a GitHub Token
-* Go to [GitHub PAT Settings](https://github.com/settings/tokens).
-* Generate a new token with `read:packages` permission.
-* Use your GitHub username and token in the credentials block below.
-
 ## 📦 CloudX SDK Compatibility
 
 ### 🧩 Language Compatibility
@@ -19,7 +14,7 @@
     - Host apps must set `minSdkVersion >= 21` to use the SDK.
 
 ### 🛠️ Build Compatibility
-- **Gradle version**: `8.2`
+- **Gradle version**: `8.5`
 - **Android Gradle Plugin**: `8.2.2`
     - Host apps using AGP `8.0+` and Gradle `8.0+` are fully supported.
 
@@ -32,7 +27,7 @@ The SDK has been tested on projects with the following configurations:
 | Kotlin             | 1.9.22   |
 | Java               | 1.8 & 11 |
 | AGP                | 8.2.2    |
-| Gradle             | 8.2      |
+| Gradle             | 8.5      |
 | Android SDK API    | 21–35    |
 
 ---
@@ -40,39 +35,34 @@ The SDK has been tested on projects with the following configurations:
 > 💡 If your app uses older Kotlin, Gradle, or AGP versions and encounters issues, please consider upgrading or contact support for compatibility help.
 
 
-### 1. Add GitHub Maven Repository
-In your project’s `settings.gradle` or `settings.gradle.kts`:
+### 1. Add Maven Central Repository
 
-```
+In your project’s `settings.gradle` or `settings.gradle.kts`  
+(You likely already have this by default):
+
+```kotlin
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/cloudx-xenoss/cloudexchange.android.sdk.internal")
-            credentials {
-                username = "<GITHUB_USERNAME>" 
-                password = "<GITHUB_TOKEN>"    
-            }
-        }
     }
 }
 ```
 
 ### 2. Add SDK Dependency
 In your app/module `build.gradle` (or `build.gradle.kts`):
-```
+```kotlin
 dependencies {
-    implementation("com.cloudx:cloudx-sdk:<latest-version>")
+    implementation("io.cloudx:sdk:<latest-version>")
 }
 ```
 
-> *Replace* <latest-version> *with the desired version (e.g.* `v0.0.1.08`*).*
+> *Replace* <latest-version> *with the desired version (e.g.* `0.0.1`*).*
 
 ### 4. Sync and Build
 * Sync your project in Android Studio.
-* The SDK will be downloaded automatically from GitHub Packages.
+* The SDK will be downloaded automatically from Maven Central.
 
 **That’s it! You’re ready to use the CloudX Android SDK.**
 
