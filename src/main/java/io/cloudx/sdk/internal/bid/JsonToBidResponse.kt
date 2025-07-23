@@ -106,7 +106,7 @@ private fun JSONArray.toBid(auctionId: String): List<Bid> {
 
 private fun JSONObject.getAdNetwork(): AdNetwork =
     getJSONObject(EXT)
-        .getJSONObject(CLOUDX)
+        .getJSONObject(PREBID)
         .getJSONObject(META)
         .getString(ADAPTER_CODE)
         .toAdNetwork()
@@ -126,6 +126,7 @@ private fun JSONObject.getAdapterExtras(): Map<String, String> {
     return adapterExtras?.toStringPairMap() ?: mapOf()
 }
 
+private const val PREBID = "prebid"
 private const val EXT = "ext"
 private const val CLOUDX = "cloudx"
 private const val META = "meta"
