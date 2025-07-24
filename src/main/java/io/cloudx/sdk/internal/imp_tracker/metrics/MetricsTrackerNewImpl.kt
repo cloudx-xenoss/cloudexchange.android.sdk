@@ -84,34 +84,22 @@ internal class MetricsTrackerNewImpl(
             }
         }
     }
-    override fun trackInitSdkRequest(latency: Long) {
-        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsInitSdkReqEnabled == true) {
-            Log.d("MetricsTrackerNewImpl", "Tracking SDK init request with latency: $latency ms")
-            trackMetric(MetricsType.SDK_INIT, latency)
-        } else {
-            Log.w("MetricsTrackerNewImpl", "SDK init request tracking is disabled in config")
+
+    override fun trackNetworkRequest(type: MetricsType, latency: Long) {
+        val isNetworkCallMetricsEnabled = metricConfig?.networkCallsEnabled == true
+        val isCallMetricsEnabled = when (type) {
+            MetricsType.SDK_INIT -> metricConfig?.networkCallsInitSdkReqEnabled == true
+            MetricsType.GEO_API -> metricConfig?.networkCallsGeoReqEnabled == true
+            MetricsType.BID_REQUEST -> metricConfig?.networkCallsBidReqEnabled == true
         }
-    }
-    override fun trackGeoRequest(latency: Long) {
-        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsGeoReqEnabled == true) {
-            Log.d("MetricsTrackerNewImpl", "Tracking Geo API request with latency: $latency ms")
-            trackMetric(MetricsType.GEO_API, latency)
+        if (isNetworkCallMetricsEnabled && isCallMetricsEnabled) {
+            Log.d("MetricsTrackerNewImpl", "Tracking network request: ${type.typeCode} with latency: $latency ms")
+            trackMetric(type, latency)
         } else {
-            Log.w("MetricsTrackerNewImpl", "Geo API request tracking is disabled in config")
-        }
-    }
-    override fun trackBidRequest(latency: Long) {
-        if (metricConfig?.networkCallsEnabled == true && metricConfig?.networkCallsBidReqEnabled == true) {
-            Log.d("MetricsTrackerNewImpl", "Tracking Bid API request with latency: $latency ms")
-            trackMetric(MetricsType.BID_REQUEST, latency)
-        } else {
-            Log.w("MetricsTrackerNewImpl", "Bid API request tracking is disabled in config")
+            Log.w("MetricsTrackerNewImpl", "Network call metrics tracking is disabled for ${type.typeCode}")
         }
     }
 
-    // Add more API metric tracking methods as needed using the above pattern
-
-    // Unified metric tracker
     private fun trackMetric(type: MetricsType, latency: Long) {
         Log.d("MetricsTrackerNewImpl", "Tracking metric: ${type.typeCode} with latency: $latency ms")
         scope.launch {

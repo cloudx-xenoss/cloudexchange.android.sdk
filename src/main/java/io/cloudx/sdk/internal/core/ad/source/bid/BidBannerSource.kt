@@ -18,6 +18,7 @@ import io.cloudx.sdk.internal.core.ad.source.decorate
 import io.cloudx.sdk.internal.core.ad.source.metricsTrackerDecoration
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -35,6 +36,7 @@ internal fun BidBannerSource(
     adEventApi: AdEventApi,
     eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
+    metricsTrackerNew: MetricsTrackerNew,
     miscParams: BannerFactoryMiscParams,
     bidRequestTimeoutMillis: Long,
     lineItems: List<Config.LineItem>?,
@@ -54,7 +56,8 @@ internal fun BidBannerSource(
         requestBid,
         cdpApi,
         eventTracker,
-        metricsTracker
+        metricsTracker,
+        metricsTrackerNew
     ) {
 
         val price = it.price

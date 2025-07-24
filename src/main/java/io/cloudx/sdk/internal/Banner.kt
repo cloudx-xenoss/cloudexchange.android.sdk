@@ -22,6 +22,7 @@ import io.cloudx.sdk.internal.core.ad.source.bid.BidBannerSource
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBannerEvent
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import kotlinx.coroutines.CoroutineScope
@@ -64,6 +65,7 @@ internal fun Banner(
     adEventApi: AdEventApi,
     eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
+    metricsTrackerNew: MetricsTrackerNew,
     connectionStatusService: ConnectionStatusService,
     activityLifecycleService: ActivityLifecycleService,
     appLifecycleService: AppLifecycleService,
@@ -92,6 +94,7 @@ internal fun Banner(
             adEventApi,
             eventTracker,
             metricsTracker,
+            metricsTrackerNew,
             miscParams,
             0,
             lineItems,

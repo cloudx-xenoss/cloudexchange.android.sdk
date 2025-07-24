@@ -43,6 +43,7 @@ import kotlin.system.measureTimeMillis
 import androidx.core.content.edit
 import com.xor.XorEncryption
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
@@ -211,7 +212,7 @@ internal class InitializationServiceImpl(
                 initAdFactory(appKeyOverride, cfg, factories)
                 initializeAdapterNetworks(cfg, activity)
 
-                metricsTrackerNew.trackGeoRequest(geoRequestMillis)
+                metricsTrackerNew.trackNetworkRequest(MetricsType.GEO_API, geoRequestMillis)
             }
 
             metricsTracker.initOperationStatus(
@@ -224,7 +225,7 @@ internal class InitializationServiceImpl(
                 )
             )
 
-            metricsTrackerNew.trackInitSdkRequest(configApiRequestMillis)
+            metricsTrackerNew.trackNetworkRequest(MetricsType.SDK_INIT, configApiRequestMillis)
 
             configApiResult
         }
@@ -261,6 +262,7 @@ internal class InitializationServiceImpl(
             factories,
             AdEventApi(config.eventTrackingEndpointUrl),
             metricsTracker,
+            metricsTrackerNew,
             eventTracker,
             ConnectionStatusService(),
             AppLifecycleService(),

@@ -6,18 +6,13 @@ import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.Database
 import io.cloudx.sdk.internal.imp_tracker.bulk.EventTrackerBulkApi
 
-
 internal interface MetricsTrackerNew {
 
     fun start(config: Config)
 
     fun setBasicData(sessionId: String, accountId: String, basePayload: String)
 
-    fun trackInitSdkRequest(latency: Long)
-
-    fun trackGeoRequest(latency: Long)
-
-    fun trackBidRequest(latency: Long)
+    fun trackNetworkRequest(type: MetricsType, latency: Long)
 
     fun trySendingPendingMetrics()
 
