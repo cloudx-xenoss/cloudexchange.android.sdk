@@ -2,7 +2,6 @@ package io.cloudx.sdk.internal.initialization
 
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.AdType
@@ -67,6 +66,7 @@ internal class InitializationServiceImpl(
     private var config: Config? = null
     private var activity: Activity? = null
     private var appKey: String = ""
+    private var basePayload: String = ""
 
     private val mutex = Mutex()
 
@@ -80,17 +80,11 @@ internal class InitializationServiceImpl(
                         val errorMessage = throwable.message
                         val stackTrace = throwable.stackTraceToString()
 
-                        val sdkVersion = BuildConfig.SDK_VERSION_NAME
-                        val osVersion = Build.VERSION.SDK_INT
-                        val testGroupName = ResolvedEndpoints.testGroupName
-
                         val pendingReport = PendingCrashReport(
                             sessionId = sessionId,
                             errorMessage = errorMessage ?: "Unknown error",
                             errorDetails = stackTrace,
-                            sdkVersion = sdkVersion,
-                            osVersion = osVersion,
-                            testGroupName = testGroupName
+                            basePayload = basePayload,
                         )
 
                         savePendingCrashReport(activity, pendingReport)
@@ -104,9 +98,7 @@ internal class InitializationServiceImpl(
         val sessionId: String,
         val errorMessage: String,
         val errorDetails: String,
-        val sdkVersion: String,
-        val osVersion: Int,
-        val testGroupName: String
+        val basePayload: String
     )
 
     private fun PendingCrashReport.toJson(): JSONObject {
@@ -114,9 +106,7 @@ internal class InitializationServiceImpl(
             put("sessionId", sessionId)
             put("errorMessage", errorMessage)
             put("errorDetails", errorDetails)
-            put("sdkVersion", sdkVersion)
-            put("osVersion", osVersion)
-            put("testGroupName", testGroupName)
+            put("basePayload", basePayload)
         }
     }
 
@@ -137,9 +127,7 @@ internal class InitializationServiceImpl(
                 sessionId = json.getString("sessionId"),
                 errorMessage = json.getString("errorMessage"),
                 errorDetails = json.getString("errorDetails"),
-                sdkVersion = json.getString("sdkVersion"),
-                osVersion = json.getInt("osVersion"),
-                testGroupName = json.getString("testGroupName")
+                basePayload = json.getString("basePayload")
             )
         }
 
@@ -213,7 +201,7 @@ internal class InitializationServiceImpl(
 
                     val pendingCrash = getPendingCrashIfAny()
                     pendingCrash?.let {
-                        sendErrorEvent(cfg, appKey, it)
+                        sendErrorEvent(it)
                     }
                 }
 
@@ -339,9 +327,8 @@ internal class InitializationServiceImpl(
         val payload = TrackingFieldResolver.buildPayload(eventId)
         val accountId = TrackingFieldResolver.getAccountId()
 
-
         if (payload != null && accountId != null) {
-            val basePayload = payload.replace(eventId, "{eventId}")
+            basePayload = payload.replace(eventId, ARG_PLACEHOLDER_EVENT_ID)
             metricsTrackerNew.setBasicData(sessionId, accountId, basePayload)
 
             val secret = XorEncryption.generateXorSecret(accountId)
@@ -351,56 +338,32 @@ internal class InitializationServiceImpl(
         }
     }
 
-    private suspend fun sendErrorEvent(
-        cfg: Config,
-        appKey: String,
+    private fun sendErrorEvent(
         pendingCrashReport: PendingCrashReport
     ) {
-        val deviceInfo = provideDeviceInfo()
-        val sdkVersion = pendingCrashReport.sdkVersion
-        val osVersion = pendingCrashReport.osVersion
-        val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
-        val sessionId = pendingCrashReport.sessionId
-        val testGroupName = pendingCrashReport.testGroupName
-
-        TrackingFieldResolver.setSessionConstData(
-            sessionId,
-            sdkVersion,
-            deviceType,
-            testGroupName
-        )
-        TrackingFieldResolver.setConfig(cfg)
-
         val eventId = UUID.randomUUID().toString()
-        val bidRequestParams = BidRequestProvider.Params(
-            adId = "",
-            adType = AdType.Banner.Standard,
-            placementName = "",
-            lineItems = emptyList(),
-            accountId = cfg.accountId ?: "",
-            appKey = appKey,
-            osVersionOld = osVersion,
-        )
-        if (activity == null) return
-        val bidRequestProvider = BidRequestProvider(
-            activity!!,
-            emptyMap()
-        )
 
-        val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
-        TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
+        var payload = if (pendingCrashReport.basePayload.isEmpty()) {
+            basePayload.replace(ARG_PLACEHOLDER_EVENT_ID, eventId)
+        } else {
+            pendingCrashReport.basePayload.replace(ARG_PLACEHOLDER_EVENT_ID, eventId)
+        }
 
-        var payload = TrackingFieldResolver.buildPayload(eventId)
-        payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")
-            ?.plus(pendingCrashReport.errorDetails)
+        payload = payload.plus(";")
+            .plus(pendingCrashReport.errorMessage).plus(";")
+            .plus(pendingCrashReport.errorDetails)
 
         val accountId = TrackingFieldResolver.getAccountId()
 
-        if (payload != null && accountId != null) {
+        if (accountId != null) {
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
             eventTracker.send(impressionId, campaignId, "1", EventType.SDK_ERROR)
         }
+    }
+
+    companion object {
+        private const val ARG_PLACEHOLDER_EVENT_ID = "{eventId}"
     }
 }
