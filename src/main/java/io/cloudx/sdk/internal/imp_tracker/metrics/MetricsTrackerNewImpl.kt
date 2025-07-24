@@ -85,12 +85,24 @@ internal class MetricsTrackerNewImpl(
         }
     }
 
-    override fun trackNetworkRequest(type: MetricsType, latency: Long) {
+    override fun trackMethodCall(type: MetricsType.Method) {
+        // Respect global and per-method call enablement flags
+        val isMethodCallMetricsEnabled = metricConfig?.sdkApiCallsEnabled == true
+        if (!isMethodCallMetricsEnabled) {
+            Log.w("MetricsTrackerNewImpl", "SDK API call metrics tracking is disabled for ${type.typeCode}")
+            return
+        }
+        Log.d("MetricsTrackerNewImpl", "Tracking SDK API call: ${type.typeCode}")
+        trackMetric(type)
+    }
+
+
+    override fun trackNetworkCall(type: MetricsType.Network, latency: Long) {
         val isNetworkCallMetricsEnabled = metricConfig?.networkCallsEnabled == true
         val isCallMetricsEnabled = when (type) {
-            MetricsType.SDK_INIT -> metricConfig?.networkCallsInitSdkReqEnabled == true
-            MetricsType.GEO_API -> metricConfig?.networkCallsGeoReqEnabled == true
-            MetricsType.BID_REQUEST -> metricConfig?.networkCallsBidReqEnabled == true
+            MetricsType.Network.SdkInit -> metricConfig?.networkCallsInitSdkReqEnabled == true
+            MetricsType.Network.GeoApi -> metricConfig?.networkCallsGeoReqEnabled == true
+            MetricsType.Network.BidRequest -> metricConfig?.networkCallsBidReqEnabled == true
         }
         if (isNetworkCallMetricsEnabled && isCallMetricsEnabled) {
             Log.d("MetricsTrackerNewImpl", "Tracking network request: ${type.typeCode} with latency: $latency ms")
@@ -100,7 +112,7 @@ internal class MetricsTrackerNewImpl(
         }
     }
 
-    private fun trackMetric(type: MetricsType, latency: Long) {
+    private fun trackMetric(type: MetricsType, latency: Long = 0) {
         Log.d("MetricsTrackerNewImpl", "Tracking metric: ${type.typeCode} with latency: $latency ms")
         scope.launch {
             val metricName = type.typeCode

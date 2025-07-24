@@ -151,7 +151,7 @@ private class BidAdSourceImpl<T : Destroyable>(
             result = requestBid.invoke(bidRequestParams.appKey, enrichedPayload)
         }
 
-        metricsTrackerNew.trackNetworkRequest(MetricsType.BID_REQUEST, bidRequestLatencyMillis)
+        metricsTrackerNew.trackNetworkCall(MetricsType.Network.BidRequest, bidRequestLatencyMillis)
 
         TrackingFieldResolver.setRequestData(
             auctionId,

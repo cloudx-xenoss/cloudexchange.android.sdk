@@ -54,7 +54,7 @@ internal class InitializationServiceImpl(
     private val adapterResolver: AdapterFactoryResolver,
     private val privacyService: PrivacyService,
     private val metricsTracker: MetricsTracker,
-    private val metricsTrackerNew: MetricsTrackerNew,
+    private val _metricsTrackerNew: MetricsTrackerNew,
     private val eventTracker: EventTracker,
     private val provideAppInfo: AppInfoProvider,
     private val provideDeviceInfo: DeviceInfoProvider,
@@ -94,6 +94,9 @@ internal class InitializationServiceImpl(
             )
         }
     }
+
+    override val metricsTrackerNew: MetricsTrackerNew
+        get() = _metricsTrackerNew
 
     data class PendingCrashReport(
         val sessionId: String,
@@ -212,7 +215,7 @@ internal class InitializationServiceImpl(
                 initAdFactory(appKeyOverride, cfg, factories)
                 initializeAdapterNetworks(cfg, activity)
 
-                metricsTrackerNew.trackNetworkRequest(MetricsType.GEO_API, geoRequestMillis)
+                metricsTrackerNew.trackNetworkCall(MetricsType.Network.GeoApi, geoRequestMillis)
             }
 
             metricsTracker.initOperationStatus(
@@ -225,7 +228,7 @@ internal class InitializationServiceImpl(
                 )
             )
 
-            metricsTrackerNew.trackNetworkRequest(MetricsType.SDK_INIT, configApiRequestMillis)
+            metricsTrackerNew.trackNetworkCall(MetricsType.Network.SdkInit, configApiRequestMillis)
 
             configApiResult
         }

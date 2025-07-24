@@ -38,6 +38,8 @@ internal interface InitializationService {
      */
     val adFactory: AdFactory?
 
+    val metricsTrackerNew: MetricsTrackerNew?
+
     fun deinitialize()
 }
 

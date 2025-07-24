@@ -12,7 +12,9 @@ internal interface MetricsTrackerNew {
 
     fun setBasicData(sessionId: String, accountId: String, basePayload: String)
 
-    fun trackNetworkRequest(type: MetricsType, latency: Long)
+    fun trackMethodCall(type: MetricsType.Method)
+
+    fun trackNetworkCall(type: MetricsType.Network, latency: Long)
 
     fun trySendingPendingMetrics()
 
