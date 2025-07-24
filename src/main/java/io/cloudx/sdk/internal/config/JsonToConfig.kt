@@ -45,6 +45,7 @@ internal suspend fun jsonToConfig(json: String): Result<Config, Error> =
                             placementLoopIndex = kvp.optString("placementLoopIndex", null)
                         )
                     },
+                    metrics = root.optJSONObject("metrics")?.toMetricsConfig(),
                     rawJson = root
                 )
             )
@@ -96,6 +97,17 @@ private fun JSONArray.toGeoHeaders(): List<Config.GeoHeader> {
         }
     }
     return headers
+}
+
+private fun JSONObject.toMetricsConfig(): Config.MetricsConfig {
+    return Config.MetricsConfig(
+        sendIntervalSeconds = this.optLong("send_interval_seconds", 60),
+        sdkApiCallsEnabled = if (has("sdk_api_calls.enabled")) optBoolean("sdk_api_calls.enabled") else null,
+        networkCallsEnabled = if (has("network_calls.enabled")) optBoolean("network_calls.enabled") else null,
+        networkCallsBidReqEnabled = if (has("network_calls.bid_req.enabled")) optBoolean("network_calls.bid_req.enabled") else null,
+        networkCallsInitSdkReqEnabled = if (has("network_calls.init_sdk_req.enabled")) optBoolean("network_calls.init_sdk_req.enabled") else null,
+        networkCallsGeoReqEnabled = if (has("network_calls.geo_req.enabled")) optBoolean("network_calls.geo_req.enabled") else null
+    )
 }
 
 private fun JSONArray.toPlacements(): Map<String, Config.Placement> {

@@ -28,6 +28,7 @@ internal class Config(
     val trackers: List<String>?,
     val geoHeaders: List<GeoHeader>?,
     val keyValuePaths: KeyValuePaths?,
+    val metrics: MetricsConfig?,
     val rawJson: JSONObject?
 ) {
 
@@ -170,5 +171,14 @@ internal class Config(
         val appKeyValues: String?,
         val eids: String?,
         val placementLoopIndex: String?
+    )
+
+    data class MetricsConfig(
+        val sendIntervalSeconds: Long = 60,
+        val sdkApiCallsEnabled: Boolean? = null,
+        val networkCallsEnabled: Boolean? = null,
+        val networkCallsBidReqEnabled: Boolean? = null,
+        val networkCallsInitSdkReqEnabled: Boolean? = null,
+        val networkCallsGeoReqEnabled: Boolean? = null
     )
 }

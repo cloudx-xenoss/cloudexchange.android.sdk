@@ -15,6 +15,8 @@ import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
@@ -51,6 +53,7 @@ internal fun <T : Destroyable> BidAdSource(
     cdpApi: CdpApi,
     eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
+    metricsTrackerNew: MetricsTrackerNew,
     createBidAd: suspend (CreateBidAdParams) -> T,
 ): BidAdSource<T> =
     BidAdSourceImpl(
@@ -60,6 +63,7 @@ internal fun <T : Destroyable> BidAdSource(
         cdpApi,
         eventTracker,
         metricsTracker,
+        metricsTrackerNew,
         createBidAd
     )
 
@@ -82,6 +86,7 @@ private class BidAdSourceImpl<T : Destroyable>(
     private val cdpApi: CdpApi,
     private val eventTracking: EventTracker,
     private val metricsTracker: MetricsTracker,
+    private val metricsTrackerNew: MetricsTrackerNew,
     private val createBidAd: suspend (CreateBidAdParams) -> T,
 ) : BidAdSource<T> {
 
@@ -146,6 +151,8 @@ private class BidAdSourceImpl<T : Destroyable>(
             result = requestBid.invoke(bidRequestParams.appKey, enrichedPayload)
         }
 
+        metricsTrackerNew.trackNetworkCall(MetricsType.Network.BidRequest, bidRequestLatencyMillis)
+
         TrackingFieldResolver.setRequestData(
             auctionId,
             bidRequestParamsJson
@@ -162,7 +169,7 @@ private class BidAdSourceImpl<T : Destroyable>(
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracking.send(impressionId, campaignId, 1, EventType.BID_REQUEST)
+            eventTracking.send(impressionId, campaignId, "1", EventType.BID_REQUEST)
         }
 
         return when (result) {

@@ -5,6 +5,7 @@ import io.cloudx.sdk.CloudX.initialize
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adfactory.AdFactory
 import io.cloudx.sdk.internal.config.ConfigApi
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.initialization.InitializationService
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
@@ -105,6 +106,7 @@ object CloudX {
                 configApi = ConfigApi(initializationParams.initEndpointUrl)
             )
             this@CloudX.initializationService = initializationService
+            initializationService.metricsTrackerNew?.trackMethodCall(MetricsType.Method.SdkInitMethod)
 
             // Initializing SDK...
             val initStatus = when (val result = initializationService.initialize(
@@ -147,6 +149,7 @@ object CloudX {
         placementName: String,
         listener: AdViewListener?
     ): CloudXAdView? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateBanner)
 
         val bannerParams = AdFactory.CreateBannerParams(
             AdType.Banner.Standard,
@@ -179,8 +182,9 @@ object CloudX {
         activity: Activity,
         placementName: String,
         listener: AdViewListener?
-    ): CloudXAdView? =
-        initializationService?.adFactory?.createBanner(
+    ): CloudXAdView? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateMrec)
+        return initializationService?.adFactory?.createBanner(
             AdFactory.CreateBannerParams(
                 AdType.Banner.MREC,
                 activity,
@@ -188,6 +192,7 @@ object CloudX {
                 listener
             )
         )
+    }
 
     /**
      * Creates [CloudXInterstitialAd] ad instance responsible for rendering non-rewarded fullscreen ads.
@@ -217,12 +222,14 @@ object CloudX {
         activity: Activity,
         placementName: String,
         listener: InterstitialListener?
-    ): CloudXInterstitialAd? =
-        initializationService?.adFactory?.createInterstitial(
+    ): CloudXInterstitialAd? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateInterstitial)
+        return initializationService?.adFactory?.createInterstitial(
             AdFactory.CreateAdParams(
                 activity, placementName, listener
             )
         )
+    }
 
     /**
      * Creates [CloudXRewardedAd] ad instance responsible for rendering non-rewarded fullscreen ads.
@@ -252,12 +259,14 @@ object CloudX {
         activity: Activity,
         placementName: String,
         listener: RewardedInterstitialListener?
-    ): CloudXRewardedAd? =
-        initializationService?.adFactory?.createRewarded(
+    ): CloudXRewardedAd? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateRewarded)
+        return initializationService?.adFactory?.createRewarded(
             AdFactory.CreateAdParams(
                 activity, placementName, listener
             )
         )
+    }
 
     /**
      * Creates Native small ad placement instance which then can be added to a view hierarchy and load/render ads.
@@ -280,14 +289,17 @@ object CloudX {
         activity: Activity,
         placementName: String,
         listener: AdViewListener?
-    ): CloudXAdView? = initializationService?.adFactory?.createBanner(
-        AdFactory.CreateBannerParams(
-            AdType.Native.Small,
-            activity,
-            placementName,
-            listener
+    ): CloudXAdView? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateNative)
+        return initializationService?.adFactory?.createBanner(
+            AdFactory.CreateBannerParams(
+                AdType.Native.Small,
+                activity,
+                placementName,
+                listener
+            )
         )
-    )
+    }
 
     /**
      * Creates Native Medium ad placement instance which then can be added to a view hierarchy and load/render ads.
@@ -310,14 +322,17 @@ object CloudX {
         activity: Activity,
         placementName: String,
         listener: AdViewListener?
-    ): CloudXAdView? = initializationService?.adFactory?.createBanner(
-        AdFactory.CreateBannerParams(
-            AdType.Native.Medium,
-            activity,
-            placementName,
-            listener
+    ): CloudXAdView? {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateNative)
+        return initializationService?.adFactory?.createBanner(
+            AdFactory.CreateBannerParams(
+                AdType.Native.Medium,
+                activity,
+                placementName,
+                listener
+            )
         )
-    )
+    }
 
 
     /**
@@ -327,6 +342,7 @@ object CloudX {
      */
     @JvmStatic
     fun setHashedUserId(hashedEmail: String) {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.SetHashedUserId)
         SdkKeyValueState.hashedUserId = hashedEmail
     }
 
@@ -336,6 +352,7 @@ object CloudX {
      */
     @JvmStatic
     fun setUserKeyValue(key: String, value: String) {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.SetUserKeyValues)
         SdkKeyValueState.userKeyValues[key] = value
     }
 
@@ -344,6 +361,7 @@ object CloudX {
      */
     @JvmStatic
     fun setAppKeyValue(key: String, value: String) {
+        initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.SetAppKeyValues)
         SdkKeyValueState.appKeyValues[key] = value
     }
 

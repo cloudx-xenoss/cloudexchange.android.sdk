@@ -5,9 +5,9 @@ import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.common.utcNowEpochMillis
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.CloudXDb
-import io.cloudx.sdk.internal.db.tracking.Placement
-import io.cloudx.sdk.internal.db.tracking.Session
-import io.cloudx.sdk.internal.db.tracking.SpendMetric
+import io.cloudx.sdk.internal.db.tracking_legacy.Placement
+import io.cloudx.sdk.internal.db.tracking_legacy.Session
+import io.cloudx.sdk.internal.db.tracking_legacy.SpendMetric
 import io.cloudx.sdk.internal.tracking.dtoconverters.toDB
 import io.cloudx.sdk.internal.tracking.dtoconverters.toSession
 import kotlinx.coroutines.CoroutineScope

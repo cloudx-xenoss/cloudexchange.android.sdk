@@ -22,6 +22,7 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
 import io.cloudx.sdk.internal.decorate
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -31,6 +32,7 @@ internal class AdFactoryImpl(
     private val factories: BidAdNetworkFactories,
     private val adEventApi: AdEventApi,
     private val metricsTracker: MetricsTracker,
+    private val metricsTrackerNew: MetricsTrackerNew,
     private val eventTracker: EventTracker,
     private val connectionStatusService: ConnectionStatusService,
     private val appLifecycleService: AppLifecycleService,
@@ -64,6 +66,7 @@ internal class AdFactoryImpl(
             adEventApi = adEventApi,
             eventTracker = eventTracker,
             metricsTracker = metricsTracker,
+            metricsTrackerNew = metricsTrackerNew,
             connectionStatusService = connectionStatusService,
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
@@ -99,6 +102,7 @@ internal class AdFactoryImpl(
             adEventApi = adEventApi,
             eventTracker = eventTracker,
             metricsTracker = metricsTracker,
+            metricsTrackerNew = metricsTrackerNew,
             connectionStatusService = connectionStatusService,
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
@@ -182,6 +186,7 @@ internal class AdFactoryImpl(
                     adEventApi = adEventApi,
                     eventTracker = eventTracker,
                     metricsTracker = metricsTracker,
+                    metricsTrackerNew = metricsTrackerNew,
                     connectionStatusService = connectionStatusService,
                     activityLifecycleService = activityLifecycleService,
                     appLifecycleService = appLifecycleService,

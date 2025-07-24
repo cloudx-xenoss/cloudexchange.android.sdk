@@ -16,6 +16,7 @@ import io.cloudx.sdk.internal.core.ad.source.bid.BidRewardedInterstitialSource
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableRewardedInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableRewardedInterstitialEvent
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 
@@ -45,6 +46,7 @@ internal fun RewardedInterstitial(
     adEventApi: AdEventApi,
     eventTracker: EventTracker,
     metricsTracker: MetricsTracker,
+    metricsTrackerNew: MetricsTrackerNew,
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     listener: RewardedInterstitialListener,
@@ -70,6 +72,7 @@ internal fun RewardedInterstitial(
             adEventApi,
             eventTracker,
             metricsTracker,
+            metricsTrackerNew,
             0,
             lineItems,
             accountId,

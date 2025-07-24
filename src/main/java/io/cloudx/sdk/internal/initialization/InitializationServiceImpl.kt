@@ -27,7 +27,6 @@ import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
-import io.cloudx.sdk.internal.lineitem.matcher.MatcherRegistry
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.AdEventApi
@@ -43,6 +42,8 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import androidx.core.content.edit
 import com.xor.XorEncryption
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
+import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
@@ -53,6 +54,7 @@ internal class InitializationServiceImpl(
     private val adapterResolver: AdapterFactoryResolver,
     private val privacyService: PrivacyService,
     private val metricsTracker: MetricsTracker,
+    private val _metricsTrackerNew: MetricsTrackerNew,
     private val eventTracker: EventTracker,
     private val provideAppInfo: AppInfoProvider,
     private val provideDeviceInfo: DeviceInfoProvider,
@@ -65,6 +67,7 @@ internal class InitializationServiceImpl(
     private var config: Config? = null
     private var activity: Activity? = null
     private var appKey: String = ""
+    private var basePayload: String = ""
 
     private val mutex = Mutex()
 
@@ -88,7 +91,8 @@ internal class InitializationServiceImpl(
                         val pendingReport = PendingCrashReport(
                             sessionId = sessionId,
                             errorMessage = errorMessage ?: "Unknown error",
-                            errorDetails = stackTrace
+                            errorDetails = stackTrace,
+                            basePayload = basePayload,
                         )
 
                         savePendingCrashReport(activity, pendingReport)
@@ -98,10 +102,14 @@ internal class InitializationServiceImpl(
         }
     }
 
+    override val metricsTrackerNew: MetricsTrackerNew
+        get() = _metricsTrackerNew
+
     data class PendingCrashReport(
         val sessionId: String,
         val errorMessage: String,
         val errorDetails: String,
+        val basePayload: String
     )
 
     private fun PendingCrashReport.toJson(): JSONObject {
@@ -109,6 +117,7 @@ internal class InitializationServiceImpl(
             put("sessionId", sessionId)
             put("errorMessage", errorMessage)
             put("errorDetails", errorDetails)
+            put("basePayload", basePayload)
         }
     }
 
@@ -128,7 +137,8 @@ internal class InitializationServiceImpl(
             PendingCrashReport(
                 sessionId = json.getString("sessionId"),
                 errorMessage = json.getString("errorMessage"),
-                errorDetails = json.getString("errorDetails")
+                errorDetails = json.getString("errorDetails"),
+                basePayload = json.getString("basePayload")
             )
         }
 
@@ -164,16 +174,17 @@ internal class InitializationServiceImpl(
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
                 eventTracker.trySendingPendingTrackingEvents()
-                val pendingCrash = getPendingCrashIfAny()
-                pendingCrash?.let {
-                    sendErrorEvent(cfg, appKey, it)
-                }
+
                 ResolvedEndpoints.resolveFrom(cfg)
                 SdkKeyValueState.setKeyValuePaths(cfg.keyValuePaths)
 
                 metricsTracker.init(appKey, cfg)
+                metricsTrackerNew.start(cfg)
 
-                val geoDataResult = geoApi.fetchGeoHeaders(ResolvedEndpoints.geoEndpoint)
+                val geoDataResult: Result<Map<String, String>, Error>
+                val geoRequestMillis = measureTimeMillis {
+                    geoDataResult = geoApi.fetchGeoHeaders(ResolvedEndpoints.geoEndpoint)
+                }
                 if (geoDataResult is Result.Success) {
                     val headersMap = geoDataResult.value
 
@@ -198,6 +209,11 @@ internal class InitializationServiceImpl(
                     GeoInfoHolder.setGeoInfo(geoInfo)
 
                     sendInitSDKEvent(cfg, appKey)
+
+                    val pendingCrash = getPendingCrashIfAny()
+                    pendingCrash?.let {
+                        sendErrorEvent(it)
+                    }
                 }
 
                 val factories = resolveAdapters(cfg)
@@ -206,7 +222,7 @@ internal class InitializationServiceImpl(
                 initAdFactory(appKeyOverride, cfg, factories)
                 initializeAdapterNetworks(cfg, activity)
 
-                MatcherRegistry.registerMatchers()
+                metricsTrackerNew.trackNetworkCall(MetricsType.Network.GeoApi, geoRequestMillis)
             }
 
             metricsTracker.initOperationStatus(
@@ -219,6 +235,8 @@ internal class InitializationServiceImpl(
                 )
             )
 
+            metricsTrackerNew.trackNetworkCall(MetricsType.Network.SdkInit, configApiRequestMillis)
+
             configApiResult
         }
 
@@ -227,6 +245,7 @@ internal class InitializationServiceImpl(
         config = null
         factories = null
         adFactory = null
+        metricsTrackerNew.stop()
     }
 
     private var factories: BidAdNetworkFactories? = null
@@ -253,6 +272,7 @@ internal class InitializationServiceImpl(
             factories,
             AdEventApi(config.eventTrackingEndpointUrl),
             metricsTracker,
+            metricsTrackerNew,
             eventTracker,
             ConnectionStatusService(),
             AppLifecycleService(),
@@ -320,61 +340,42 @@ internal class InitializationServiceImpl(
         val accountId = TrackingFieldResolver.getAccountId()
 
         if (payload != null && accountId != null) {
+            basePayload = payload.replace(eventId, ARG_PLACEHOLDER_EVENT_ID)
+            metricsTrackerNew.setBasicData(sessionId, accountId, basePayload)
+
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracker.send(impressionId, campaignId, 1, EventType.SDK_INIT)
+            eventTracker.send(impressionId, campaignId, "1", EventType.SDK_INIT)
         }
     }
 
-
-    private suspend fun sendErrorEvent(
-        cfg: Config,
-        appKey: String,
+    private fun sendErrorEvent(
         pendingCrashReport: PendingCrashReport
     ) {
-        val deviceInfo = provideDeviceInfo()
-        val sdkVersion = BuildConfig.SDK_VERSION_NAME
-        val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
-        val sessionId = pendingCrashReport.sessionId
-
-        TrackingFieldResolver.setSessionConstData(
-            sessionId,
-            sdkVersion,
-            deviceType,
-            ResolvedEndpoints.testGroupName
-        )
-        TrackingFieldResolver.setConfig(cfg)
-
         val eventId = UUID.randomUUID().toString()
-        val bidRequestParams = BidRequestProvider.Params(
-            adId = "",
-            adType = AdType.Banner.Standard,
-            placementName = "",
-            lineItems = emptyList(),
-            accountId = cfg.accountId ?: "",
-            appKey = appKey
-        )
-        if (activity == null) return
-        val bidRequestProvider = BidRequestProvider(
-            activity!!,
-            emptyMap()
-        )
 
-        val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)
-        TrackingFieldResolver.setRequestData(eventId, bidRequestParamsJson)
+        var payload = if (pendingCrashReport.basePayload.isEmpty()) {
+            basePayload.replace(ARG_PLACEHOLDER_EVENT_ID, eventId)
+        } else {
+            pendingCrashReport.basePayload.replace(ARG_PLACEHOLDER_EVENT_ID, eventId)
+        }
 
-        var payload = TrackingFieldResolver.buildPayload(eventId)
-        payload = payload?.plus(";")?.plus(pendingCrashReport.errorMessage)?.plus(";")?.plus(pendingCrashReport.errorDetails)
+        payload = payload.plus(";")
+            .plus(pendingCrashReport.errorMessage).plus(";")
+            .plus(pendingCrashReport.errorDetails)
 
-        println("hop: InitializationServiceImpl sendErrorEvent payload: $payload")
         val accountId = TrackingFieldResolver.getAccountId()
 
-        if (payload != null && accountId != null) {
+        if (accountId != null) {
             val secret = XorEncryption.generateXorSecret(accountId)
             val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
             val impressionId = XorEncryption.encrypt(payload, secret)
-            eventTracker.send(impressionId, campaignId, 1, EventType.SDK_ERROR)
+            eventTracker.send(impressionId, campaignId, "1", EventType.SDK_ERROR)
         }
+    }
+
+    companion object {
+        private const val ARG_PLACEHOLDER_EVENT_ID = "{eventId}"
     }
 }

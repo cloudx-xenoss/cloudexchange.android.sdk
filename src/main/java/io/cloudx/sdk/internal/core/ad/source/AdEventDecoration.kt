@@ -163,7 +163,7 @@ internal fun bidAdDecoration(
                 val secret = XorEncryption.generateXorSecret(accountId)
                 val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
                 val impressionId = XorEncryption.encrypt(payload, secret)
-                eventTracker.send(impressionId, campaignId, 1, EventType.IMPRESSION)
+                eventTracker.send(impressionId, campaignId, "1", EventType.IMPRESSION)
             }
         }
     },
@@ -178,7 +178,7 @@ internal fun bidAdDecoration(
                 val secret = XorEncryption.generateXorSecret(accountId)
                 val campaignId = XorEncryption.generateCampaignIdBase64(accountId)
                 val impressionId = XorEncryption.encrypt(payload, secret)
-                eventTracker.send(impressionId, campaignId, 1, EventType.CLICK)
+                eventTracker.send(impressionId, campaignId, "1", EventType.CLICK)
             }
         }
     }

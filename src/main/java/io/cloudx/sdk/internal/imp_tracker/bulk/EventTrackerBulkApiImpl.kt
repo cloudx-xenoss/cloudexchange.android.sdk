@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.imp_tracker
+package io.cloudx.sdk.internal.imp_tracker.bulk
 
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.CloudXLogger
@@ -7,45 +7,39 @@ import io.cloudx.sdk.internal.Logger
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.retry
 import io.ktor.client.plugins.timeout
-import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import java.net.URLEncoder
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
-internal class EventTrackingApiImpl(
+internal class EventTrackerBulkApiImpl(
     private val timeoutMillis: Long,
     private val httpClient: HttpClient,
-) : EventTrackingApi {
+) : EventTrackerBulkApi {
 
     private val tag = "EventTrackingApi"
 
     override suspend fun send(
-        endpointUrl: String,
-        encodedData: String,
-        campaignId: String,
-        eventValue: Int,
-        eventName: String
+        endpointUrl: String, items: List<EventAM>
     ): Result<Unit, Error> {
 
         Logger.d(tag, buildString {
             appendLine("Sending event tracking  request:")
             appendLine("  Endpoint: $endpointUrl")
-            appendLine("  Impression: $encodedData")
-            appendLine("  CampaignId: $campaignId")
-            appendLine("  EventValue: $eventValue")
-            appendLine("  EventName: $eventName")
+            appendLine("  items: $items")
         })
 
-        CloudXLogger.info("MainActivity", "Tracking: Sending ${eventName.uppercase()} event")
+        CloudXLogger.info("MainActivity", "Tracking: Sending Bulk ${items.count()} events")
 
         return try {
-            val response = httpClient.get(endpointUrl) {
+            val requestJson = items.toJson()
+            println("EventTrackingBulk Request JSON: $requestJson")
+            val response = httpClient.post(endpointUrl) {
                 timeout { requestTimeoutMillis = timeoutMillis }
-                parameter("impression", URLEncoder.encode(encodedData, Charsets.UTF_8.name()))
-                parameter("campaignId", URLEncoder.encode(campaignId, Charsets.UTF_8.name()))
-                parameter("eventValue", "1")
-                parameter("eventName", eventName)
-                parameter("debug", true)
+                setBody(requestJson)
+                contentType(ContentType.Application.Json)
 
                 retry {
                     retryOnServerErrors(maxRetries = 3)

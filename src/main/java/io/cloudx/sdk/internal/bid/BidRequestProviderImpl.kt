@@ -110,7 +110,7 @@ internal class BidRequestProviderImpl(
                     put("model", deviceInfo.model)
                     put("hwv", deviceInfo.hwVersion)
                     put("os", deviceInfo.os)
-                    put("osv", deviceInfo.osVersion)
+                    put("osv", params.osVersionOld ?: deviceInfo.osVersion)
 
                     put("ua", provideUserAgent())
 

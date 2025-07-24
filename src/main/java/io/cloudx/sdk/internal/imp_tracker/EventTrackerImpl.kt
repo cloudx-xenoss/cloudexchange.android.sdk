@@ -4,6 +4,8 @@ import io.cloudx.sdk.internal.Logger
 import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.db.CloudXDb
 import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEvents
+import io.cloudx.sdk.internal.imp_tracker.bulk.EventAM
+import io.cloudx.sdk.internal.imp_tracker.bulk.EventTrackerBulkApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -16,15 +18,17 @@ internal class EventTrackerImpl(
 
     private val tag = "EventTracker"
     private var baseEndpoint: String? = null
+    private var bulkEndpoint: String? = null
 
-    private val trackingApi = TrackingApi()
+    private val trackerApi = EventTrackerApi()
+    private val trackerBulkApi = EventTrackerBulkApi()
 
     override fun setEndpoint(endpointUrl: String?) {
         this.baseEndpoint = endpointUrl
     }
 
     override fun send(
-        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
+        encoded: String, campaignId: String, eventValue: String, eventType: EventType
     ) {
         scope.launch {
             trackEvent(encoded, campaignId, eventValue, eventType)
@@ -32,7 +36,7 @@ internal class EventTrackerImpl(
     }
 
     private suspend fun trackEvent(
-        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
+        encoded: String, campaignId: String, eventValue: String, eventType: EventType
     ) {
 
         val endpointUrl = baseEndpoint
@@ -44,7 +48,7 @@ internal class EventTrackerImpl(
         }
 
         val finalUrl = endpointUrl.plus("/${eventType.pathSegment}")
-        val result = trackingApi.send(
+        val result = trackerApi.send(
             finalUrl, encoded, campaignId, eventValue, eventType.code
         )
         if (result is io.cloudx.sdk.Result.Success) {
@@ -63,37 +67,37 @@ internal class EventTrackerImpl(
                 return@launch
             }
             Logger.d(tag, "Found ${cached.size} pending events to retry")
-            cached.forEach { retryEntry(it) }
+            sendBulk(cached)
         }
     }
 
-    private suspend fun retryEntry(entry: CachedTrackingEvents) {
-        EventType.from(entry.eventName)?.let { eventType ->
-            val endpointUrl = baseEndpoint
+    private suspend fun sendBulk(entries: List<CachedTrackingEvents>) {
+        val endpointUrl = bulkEndpoint
 
-            Logger.d(tag, "retryEntry: $eventType → endpoint=$baseEndpoint for id=${entry.id}")
-            if (endpointUrl.isNullOrBlank()) {
-                Logger.e(tag, "No endpoint for $eventType, skipping ${entry.id}")
-                return
-            }
-            val finalUrl = endpointUrl.plus("/${eventType.pathSegment}")
-            val result = trackingApi.send(
-                finalUrl, entry.encoded, entry.campaignId, entry.eventValue, eventType.code
+        if (endpointUrl.isNullOrBlank()) {
+            return
+        }
+
+        val items = entries.map { entry ->
+            EventAM(
+                impression = entry.encoded,
+                campaignId = entry.campaignId,
+                eventValue = entry.eventValue,
+                eventName = entry.eventName,
+                type = entry.type
             )
-            if (result is io.cloudx.sdk.Result.Success) {
-                Logger.d(tag, "Resend success for ${entry.id}")
-                db.cachedTrackingEventDao().delete(entry.id)
-            } else {
-                Logger.e(tag, "Resend failed for ${entry.id}, keeping for later")
+        }
+
+        val result = trackerBulkApi.send(endpointUrl, items)
+        if (result is io.cloudx.sdk.Result.Success) {
+            entries.forEach {
+                db.cachedTrackingEventDao().delete(it.id)
             }
-        } ?: run {
-            Logger.e(tag, "Unknown eventName='${entry.eventName}', deleting ${entry.id}")
-            db.cachedTrackingEventDao().delete(entry.id)
         }
     }
 
     private suspend fun saveToDb(
-        encoded: String, campaignId: String, eventValue: Int, eventType: EventType
+        encoded: String, campaignId: String, eventValue: String, eventType: EventType
     ) {
         db.cachedTrackingEventDao().insert(
             CachedTrackingEvents(
@@ -101,7 +105,8 @@ internal class EventTrackerImpl(
                 encoded = encoded,
                 campaignId = campaignId,
                 eventValue = eventValue,
-                eventName = eventType.code
+                eventName = eventType.code,
+                type = eventType.pathSegment
             )
         )
     }
