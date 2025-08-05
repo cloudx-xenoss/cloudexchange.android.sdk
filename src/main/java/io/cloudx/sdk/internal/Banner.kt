@@ -21,11 +21,13 @@ import io.cloudx.sdk.internal.core.ad.source.bid.BidAdSourceResponse
 import io.cloudx.sdk.internal.core.ad.source.bid.BidBannerSource
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBannerEvent
+import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import io.cloudx.sdk.internal.tracking.MetricsTracker
+import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -255,7 +257,9 @@ private class BannerImpl(
         while (loadedBanner == null) {
             ensureActive()
 
-            loadedBanner = bidAdSource.requestBid()?.loadOrDestroyBanner()
+            val bids: BidAdSourceResponse<SuspendableBanner>? = bidAdSource.requestBid()
+
+            loadedBanner = bids?.loadOrDestroyBanner()
 
             if (loadedBanner == null) {
                 bidBackoffMechanism.notifySoftError()
@@ -281,20 +285,44 @@ private class BannerImpl(
     /**
      * Trying to load the top rank (1) bid; load the next top one otherwise.
      */
-    private suspend fun BidAdSourceResponse<SuspendableBanner>.loadOrDestroyBanner(): SuspendableBanner? =
-        coroutineScope {
-            for (bidItem in bidItemsByRank) {
-                ensureActive()
-//                CloudXLogger.debug(
-//                    TAG,
-//                    "attempting to load ${bidItem.adNetwork} bid of rank: ${bidItem.rank} "
-//                )
+    private suspend fun BidAdSourceResponse<SuspendableBanner>.loadOrDestroyBanner(): SuspendableBanner? = coroutineScope {
+        var loadedBanner: SuspendableBanner? = null
+        var winnerIndex: Int = -1
 
-                val banner = loadOrDestroyBanner(bidAdLoadTimeoutMillis, bidItem.createBidAd)
-                if (banner != null) return@coroutineScope banner
+        // Try loading each bid in order
+        for ((index, bidItem) in bidItemsByRank.withIndex()) {
+            ensureActive()
+
+            val banner = loadOrDestroyBanner(bidAdLoadTimeoutMillis, bidItem.createBidAd)
+
+            if (banner != null) {
+                loadedBanner = banner
+                winnerIndex = index
+                break
             }
-            null
         }
+
+        // Fire lurl for all losing bids (everything except winnerIndex)
+        if (winnerIndex != -1) {
+            bidItemsByRank.forEachIndexed { index, bidItem ->
+                if (index != winnerIndex) {
+                    val lossUrl = bidItem.lurl
+                    if (!lossUrl.isNullOrBlank()) {
+                        launch(Dispatchers.IO) {
+                            try {
+                                CloudXHttpClient().get(lossUrl)
+                            } catch (e: Exception) {
+                                // Optional: log or ignore
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        loadedBanner
+    }
+
 
     // returns: null - banner wasn't loaded.
     private suspend fun loadOrDestroyBanner(

@@ -89,6 +89,7 @@ private fun JSONArray.toBid(auctionId: String): List<Bid> {
                 priceRaw = priceValue?.let { "%.6f".format(it).trimEnd('0').trimEnd('.') },
                 burl = if (has("burl")) getString("burl") else null,
                 nurl = if (has("nurl")) getString("nurl") else null,
+                lurl = if (has("lurl")) getString("lurl") else null,
                 adNetwork = getAdNetwork(),
                 rank = getRank(),
                 adapterExtras = getAdapterExtras(),

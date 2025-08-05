@@ -66,10 +66,11 @@ internal fun BidBannerSource(
         val bidId = it.bidId
         val adm = it.adm
         val nurl = it.nurl
+        val lurl = it.lurl
         val params = it.params
         val auctionId = it.auctionId
 
-        SuspendableBanner(price, network, adId, nurl) { listener ->
+        SuspendableBanner(price, network, adId, nurl, lurl) { listener ->
             // TODO. Explicit Result cast isn't "cool", even though there's try catch somewhere.
             (factories[network]?.create(
                 activity, bannerContainer, refreshSeconds, adId, bidId,

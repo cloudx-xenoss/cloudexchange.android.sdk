@@ -41,6 +41,7 @@ object CloudX {
      * @sample io.cloudx.sdk.samples.cloudXSetTargeting
      */
     @JvmStatic
+    @Deprecated("Use  setAppKeyValues() and setUserKeyValues() instead", ReplaceWith("setAppKeyValues() and setUserKeyValues()"))
     fun setTargeting(targeting: CloudXTargeting?) {
         targetingService.cloudXTargeting.value = targeting
     }
@@ -385,7 +386,7 @@ object CloudX {
     class InitializationParams(
         val appKey: String,
         val initEndpointUrl: String,
-        val hashedUserId: String?
+        val hashedUserId: String? = null
     )
 }
 

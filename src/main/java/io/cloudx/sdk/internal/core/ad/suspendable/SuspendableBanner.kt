@@ -40,15 +40,17 @@ internal fun SuspendableBanner(
     adNetwork: AdNetwork,
     adUnitId: String,
     nurl: String?,
+    lurl: String?,
     createBanner: (listener: io.cloudx.sdk.internal.adapter.BannerListener) -> io.cloudx.sdk.internal.adapter.Banner
 ): SuspendableBanner =
-    SuspendableBannerImpl(price, adNetwork, adUnitId, nurl, createBanner)
+    SuspendableBannerImpl(price, adNetwork, adUnitId, nurl, lurl, createBanner)
 
 private class SuspendableBannerImpl(
     override val price: Double?,
     override val adNetwork: AdNetwork,
     override val adUnitId: String,
     private val nurl: String?,
+    private val lurl: String?,
     createBanner: (listener: io.cloudx.sdk.internal.adapter.BannerListener) -> io.cloudx.sdk.internal.adapter.Banner,
 ): SuspendableBanner {
 

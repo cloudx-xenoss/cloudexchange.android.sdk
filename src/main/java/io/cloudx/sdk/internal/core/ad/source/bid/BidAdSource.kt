@@ -42,6 +42,7 @@ internal open class BidAdSourceResponse<T : Destroyable>(
         val price: Double,
         val priceRaw: String,
         val rank: Int,
+        val lurl: String?,
         val createBidAd: suspend () -> T,
     )
 }
@@ -74,6 +75,7 @@ internal class CreateBidAdParams(
     val params: Map<String, String>?,
     val burl: String?,
     val nurl: String?,
+    val lurl: String?,
     val adNetwork: AdNetwork,
     val price: Double,
     val auctionId: String
@@ -232,6 +234,7 @@ private fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
                 price = price,
                 priceRaw = priceRaw,
                 rank = bid.rank,
+                lurl = bid.lurl,
                 createBidAd = {
                     createBidAd(
                         CreateBidAdParams(
@@ -241,6 +244,7 @@ private fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
                             params = bid.adapterExtras,
                             burl = bid.burl,
                             nurl = bid.nurl,
+                            lurl = bid.lurl,
                             adNetwork = adNetwork,
                             price = price,
                             auctionId = bid.auctionId
