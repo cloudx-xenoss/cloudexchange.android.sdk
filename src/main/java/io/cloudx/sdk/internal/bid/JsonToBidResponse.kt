@@ -6,6 +6,7 @@ import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.Logger
 import io.cloudx.sdk.internal.toAdNetwork
 import io.cloudx.sdk.internal.toStringPairMap
+import io.cloudx.sdk.testing.TestBids
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -100,6 +101,9 @@ private fun JSONArray.toBid(auctionId: String): List<Bid> {
                 adHeight = if (has("h")) getInt("h") else null,
             )
         }
+//        Uncomment the following lines to use test bids.
+//        val testBids = TestBids.getTestBids(auctionId)
+//        bids += testBids
     }
 
     return bids
