@@ -37,6 +37,7 @@ internal open class BidAdSourceResponse<T : Destroyable>(
 ) {
 
     class Item<T>(
+        val id: String,
         val adNetwork: AdNetwork,
         val adNetworkOriginal: AdNetwork, // todo: only used for demo
         val price: Double,
@@ -229,6 +230,7 @@ private fun <T : Destroyable> BidResponse.toBidAdSourceResponse(
             }
 
             BidAdSourceResponse.Item(
+                id = bid.id,
                 adNetwork = adNetwork,
                 adNetworkOriginal = adNetworkOriginal,
                 price = price,

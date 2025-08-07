@@ -3,6 +3,8 @@ package io.cloudx.sdk.internal.core.ad.baseinterstitial
 import io.cloudx.sdk.Destroyable
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.CloudXLogger
+import io.cloudx.sdk.internal.bid.LossReason
+import io.cloudx.sdk.internal.bid.LossReporter
 import io.cloudx.sdk.internal.common.BidBackoffAlgorithm
 import io.cloudx.sdk.internal.common.service.AppLifecycleService
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
@@ -17,6 +19,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 // Updating + caching.
 internal class CachedAdRepository<SuspendableAd: Destroyable, C: CacheableAd>(
@@ -84,39 +87,49 @@ internal class CachedAdRepository<SuspendableAd: Destroyable, C: CacheableAd>(
     }
 
     private suspend fun enqueueBid(): AdLoadOperationStatus = coroutineScope {
-        // TODO. Refactor. This whole class and the rest of precaching/displaying stuff..
-        //  Move to the BidAdAdSource?
-        // Prevent requests for the app in the background.
         appLifecycleService.awaitAppResume()
-
-        // Waiting till cache has available ad slots, then start bid request operation.
         cachedQueue.hasAvailableSlots.first { it }
 
-        // TODO. IMPORTANT.
-        //  Rn, We always have bid waiting for cache queue to free up when full.
-        bidAdSource.requestBid()?.let {
-            // Trying to load the top rank (1) bid; load the next top one otherwise.
-            for (bidItem in it.bidItemsByRank) {
-                ensureActive()
-//                CloudXLogger.debug(
-//                    TAG,
-//                    "attempting to load ${bidItem.adNetwork} bid of rank: ${bidItem.rank} "
-//                )
+        val bidResponse = bidAdSource.requestBid() ?: return@coroutineScope AdLoadOperationStatus.AdLoadFailed
 
+        for ((index, bidItem) in bidResponse.bidItemsByRank.withIndex()) {
+            ensureActive()
+
+            val ad = runCatching {
+                withTimeoutOrNull(bidLoadTimeoutMillis) {
+                    createCacheableAd(bidItem.createBidAd())
+                }
+            }.getOrNull()
+
+            if (ad != null) {
                 val result = cachedQueue.enqueueBidAd(
                     bidItem.price,
                     bidLoadTimeoutMillis,
-                    createBidAd = { createCacheableAd(bidItem.createBidAd()) }
+                    createBidAd = { ad }
                 )
 
                 if (result == AdLoadOperationStatus.AdLoadSuccess) {
+                    // Fire LossReason.LostToHigherBid for all lower-ranked bids
+                    val lowerRanked = bidResponse.bidItemsByRank.drop(index + 1)
+                    for (loserItem in lowerRanked) {
+                        LossReporter.fireLoss(
+                            loserItem.lurl,
+                            LossReason.LostToHigherBid
+                        )
+                    }
+
                     return@coroutineScope result
+                } else {
+                    // Ad created but failed to enqueue — technical error
+                    LossReporter.fireLoss(bidItem.lurl, LossReason.TechnicalError)
                 }
+            } else {
+                // Ad failed to create — technical error
+                LossReporter.fireLoss(bidItem.lurl, LossReason.TechnicalError)
             }
+        }
 
-            AdLoadOperationStatus.AdLoadFailed
-
-        } ?: AdLoadOperationStatus.AdLoadFailed
+        AdLoadOperationStatus.AdLoadFailed
     }
 
     override fun destroy() {

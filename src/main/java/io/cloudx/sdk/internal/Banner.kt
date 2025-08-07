@@ -10,6 +10,9 @@ import io.cloudx.sdk.internal.adapter.BidBannerFactory
 import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
 import io.cloudx.sdk.internal.bid.BidApi
 import io.cloudx.sdk.internal.bid.BidRequestProvider
+import io.cloudx.sdk.internal.bid.LoadResult
+import io.cloudx.sdk.internal.bid.LossReason
+import io.cloudx.sdk.internal.bid.LossReporter
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.common.BidBackoffMechanism
 import io.cloudx.sdk.internal.common.service.ActivityLifecycleService
@@ -134,7 +137,7 @@ private class BannerImpl(
     private val activityLifecycleService: ActivityLifecycleService,
     private val appLifecycleService: AppLifecycleService,
     private val metricsTrackerNew: MetricsTrackerNew,
-    ) : Banner {
+) : Banner {
 
     private val TAG = "BannerImpl"
 
@@ -289,32 +292,43 @@ private class BannerImpl(
         var loadedBanner: SuspendableBanner? = null
         var winnerIndex: Int = -1
 
-        // Try loading each bid in order
+        val lossReasons = mutableMapOf<String, LossReason>()
+
         for ((index, bidItem) in bidItemsByRank.withIndex()) {
             ensureActive()
 
-            val banner = loadOrDestroyBanner(bidAdLoadTimeoutMillis, bidItem.createBidAd)
+            val result = loadOrDestroyBanner(bidAdLoadTimeoutMillis, bidItem.createBidAd)
+            val banner = result.banner
 
             if (banner != null) {
                 loadedBanner = banner
                 winnerIndex = index
                 break
+            } else {
+                lossReasons[bidItem.id] = LossReason.TechnicalError
             }
         }
 
-        // Fire lurl for all losing bids (everything except winnerIndex)
         if (winnerIndex != -1) {
+            // Mark all other bids as "Lost to higher bid"
+            bidItemsByRank.forEachIndexed { index, bidItem ->
+                if (index != winnerIndex && !lossReasons.containsKey(bidItem.id)) {
+                    lossReasons[bidItem.id] = LossReason.LostToHigherBid
+                }
+            }
+
+            // Fire lurls
             bidItemsByRank.forEachIndexed { index, bidItem ->
                 if (index != winnerIndex) {
-                    val lossUrl = bidItem.lurl
-                    if (!lossUrl.isNullOrBlank()) {
-                        launch(Dispatchers.IO) {
-                            try {
-                                CloudXHttpClient().get(lossUrl)
-                            } catch (e: Exception) {
-                                // Optional: log or ignore
-                            }
-                        }
+                    val reason = lossReasons[bidItem.id] ?: return@forEachIndexed
+
+                    if (!bidItem.lurl.isNullOrBlank()) {
+                        println("📤 Sending resolved lurl for index=$index, adNetwork=${bidItem.adNetwork}, rank=${bidItem.rank}, reason=${reason.name}")
+                        CloudXLogger.debug(TAG, "Calling LURL for ${bidItem.adNetwork}, reason=${reason.name}, rank=${bidItem.rank}")
+
+                        LossReporter.fireLoss(bidItem.lurl, reason)
+                    } else {
+                        println("ℹ️ No lurl to send for index=$index, adNetwork=${bidItem.adNetwork}")
                     }
                 }
             }
@@ -323,30 +337,26 @@ private class BannerImpl(
         loadedBanner
     }
 
-
     // returns: null - banner wasn't loaded.
     private suspend fun loadOrDestroyBanner(
         loadTimeoutMillis: Long,
         createBanner: suspend () -> SuspendableBanner
-    ): SuspendableBanner? {
+    ): LoadResult {
         // TODO. Replace runCatching with actual check whether ad can be created based on parameters
         //  For instance:
         //  Create AdColony ad when there's no AdColony ad in this module or init parameters are invalid.
         val banner = try {
             createBanner()
         } catch (e: Exception) {
-            null
-        } ?: return null
+            return LoadResult(null, LossReason.TechnicalError)
+        }
 
         var isBannerLoaded = false
 
         try {
-            // TODO. Await both via flow.combine or alternatives.
-            // Waiting for banner's activity to resume/go foreground in order to avoid low banner display rate.
             if (suspendPreloadWhenInvisible) {
                 activityLifecycleService.awaitActivityResume(activity)
             } else {
-                // Either way don't load banners when the whole app goes background.
                 appLifecycleService.awaitAppResume()
             }
 
@@ -356,11 +366,15 @@ private class BannerImpl(
 
         } catch (e: TimeoutCancellationException) {
             banner.timeout()
+            return LoadResult(null, LossReason.TechnicalError)
+        } catch (e: Exception) {
+            println("⚠️ Failed to load banner: ${e.message}")
+            return LoadResult(null, LossReason.TechnicalError)
         } finally {
             if (!isBannerLoaded) banner.destroy()
         }
 
-        return if (isBannerLoaded) banner else null
+        return LoadResult(banner, null) // No loss reason, we have a winner
     }
 
     private var currentBanner: SuspendableBanner? = null
