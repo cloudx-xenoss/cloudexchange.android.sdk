@@ -301,18 +301,27 @@ private suspend fun JSONObject.putRegsObject(privacyService: PrivacyService) {
 
         put("ext", JSONObject().apply {
             put("gdpr_consent", cloudXPrivacy.isUserConsent.toOrtbRegsValue())
-
             put("ccpa_do_not_sell", cloudXPrivacy.isDoNotSell.toOrtbRegsValue())
 
             val iabJsonObj = JSONObject().apply {
                 put("gdpr_tcfv2_gdpr_applies", privacyService.gdprApplies().toOrtbRegsValue())
                 put("gdpr_tcfv2_tc_string", privacyService.tcString())
-
                 put("ccpa_us_privacy_string", privacyService.usPrivacyString())
             }
 
             if (iabJsonObj.length() > 0) {
                 put("iab", iabJsonObj)
+            }
+
+            privacyService.gppString()?.let { gpp ->
+                put("gpp", gpp)
+            }
+
+            privacyService.gppSid()?.let { sidList ->
+                val jsonArray = JSONArray().apply {
+                    sidList.forEach { put(it) }
+                }
+                put("gpp_sid", jsonArray)
             }
         })
     })

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /**
  * Facade Privacy API: contains publisher defined flag based privacy data, IAB based APIs (us string, tcf string) as well.
  */
-internal interface PrivacyService : TCFProvider, USPrivacyProvider {
+internal interface PrivacyService : TCFProvider, USPrivacyProvider, GPPProvider {
 
     /**
      * Holds privacy data set explicitly by publishers (COPPA, GDPR consent, Do Not Sell values etc),
@@ -21,6 +21,7 @@ internal fun PrivacyService(): PrivacyService = LazySingleInstance
 private val LazySingleInstance by lazy {
     PrivacyServiceImpl(
         tcfProvider = TCFProvider(),
-        usPrivacyProvider = USPrivacyProvider()
+        usPrivacyProvider = USPrivacyProvider(),
+        gppProvider = GPPProvider()
     )
 }
