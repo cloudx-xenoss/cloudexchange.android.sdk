@@ -42,6 +42,7 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import androidx.core.content.edit
 import com.xor.XorEncryption
+import io.cloudx.sdk.internal.imp_tracker.ClickCounterTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 
@@ -242,6 +243,7 @@ internal class InitializationServiceImpl(
 
     override fun deinitialize() {
         ResolvedEndpoints.reset()
+        ClickCounterTracker.reset()
         config = null
         factories = null
         adFactory = null

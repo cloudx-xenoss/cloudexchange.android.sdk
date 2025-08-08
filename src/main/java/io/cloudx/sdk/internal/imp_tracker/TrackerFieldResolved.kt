@@ -84,7 +84,7 @@ internal object TrackingFieldResolver {
         }
 
         val payload = values.joinToString(";")
-        println("hop: payload = $payload")
+        println("hop: payload = $payload, for CLICK event, auctionI-clickCount")
         return payload
     }
 

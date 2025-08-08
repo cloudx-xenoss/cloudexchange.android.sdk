@@ -16,6 +16,7 @@ import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.tracking.AdEventApi
 import kotlinx.coroutines.launch
 import com.xor.XorEncryption
+import io.cloudx.sdk.internal.imp_tracker.ClickCounterTracker
 
 private typealias Func = (() -> Unit)
 private typealias ClickFunc = (() -> Unit)
@@ -155,8 +156,10 @@ internal fun bidAdDecoration(
 
         val scope = GlobalScopes.IO
         scope.launch {
+            val clickCount = ClickCounterTracker.incrementAndGet(auctionId)
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
-            val payload = TrackingFieldResolver.buildPayload(auctionId)
+            var payload = TrackingFieldResolver.buildPayload(auctionId)
+            payload = payload?.replace(auctionId, "$auctionId-$clickCount")
             val accountId = TrackingFieldResolver.getAccountId()
 
             if (payload != null && accountId != null) {
@@ -171,7 +174,9 @@ internal fun bidAdDecoration(
         val scope = GlobalScopes.IO
         scope.launch {
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
-            val payload = TrackingFieldResolver.buildPayload(auctionId)
+            val clickCount = ClickCounterTracker.incrementAndGet(auctionId)
+
+            val payload = TrackingFieldResolver.buildPayload("$auctionId-$clickCount")
             val accountId = TrackingFieldResolver.getAccountId()
 
             if (payload != null && accountId != null) {
