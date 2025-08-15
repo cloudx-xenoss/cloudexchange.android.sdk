@@ -14,7 +14,7 @@ internal class PrivacyServiceImpl(
     USPrivacyProvider by usPrivacyProvider,
     GPPProvider by gppProvider {
 
-    override suspend fun shouldClearPersonalData(): Boolean {
+    override fun shouldClearPersonalData(): Boolean {
         val isCoppa = isCoppaEnabled()
         val isCaliforniaUser = GeoInfoHolder.isCaliforniaUser()
         val ccpa = if (isCaliforniaUser) decodedCcpa() else null
@@ -24,7 +24,7 @@ internal class PrivacyServiceImpl(
         return shouldClear
     }
 
-    override suspend fun isCoppaEnabled(): Boolean {
+    override fun isCoppaEnabled(): Boolean {
         return gppProvider.isCoppaEnabled()
     }
 }

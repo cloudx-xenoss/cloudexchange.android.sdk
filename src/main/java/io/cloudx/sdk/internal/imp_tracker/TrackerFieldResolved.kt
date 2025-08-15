@@ -1,6 +1,7 @@
 package io.cloudx.sdk.internal.imp_tracker
 
 import io.cloudx.sdk.internal.config.Config
+import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import org.json.JSONArray
 import org.json.JSONObject
@@ -173,8 +174,11 @@ internal object TrackingFieldResolver {
                     return auctionedLoopIndex[auctionId]
                 }
                 if (field == BID_REQUEST_PARAM_IFA) { // TODO: CX-919 Temporary Hardcoded Solution
-                    val isLimitAdTrackingEnabled = requestDataMap[auctionId]?.optJSONObject("device")?.optInt("dnt") == 1
-                    return if (isLimitAdTrackingEnabled) {
+                    if (PrivacyService().shouldClearPersonalData()) {
+                        return sessionId
+                    }
+                    val isLimitedAdTrackingEnabled = requestDataMap[auctionId]?.optJSONObject("device")?.optInt("dnt") == 1
+                    return if (isLimitedAdTrackingEnabled) {
                         val hashedUserId = SdkKeyValueState.hashedUserId.orEmpty()
                         val hasUserHashedId = hashedUserId.isBlank().not()
                         if (hasUserHashedId) {

@@ -7,10 +7,10 @@ import io.cloudx.sdk.internal.ApplicationContext
 import io.cloudx.sdk.internal.CloudXLogger
 
 internal interface GPPProvider {
-    suspend fun gppString(): String?
-    suspend fun gppSid(): List<Int>?
-    suspend fun decodedCcpa(): CcpaConsent?
-    suspend fun isCoppaEnabled(): Boolean
+    fun gppString(): String?
+    fun gppSid(): List<Int>?
+    fun decodedCcpa(): CcpaConsent?
+    fun isCoppaEnabled(): Boolean
 }
 
 internal fun GPPProvider(): GPPProvider = LazySingleInstance
@@ -24,7 +24,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
     @Suppress("DEPRECATION")
     private val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
-    override suspend fun gppString(): String? {
+    override fun gppString(): String? {
         return try {
             sharedPrefs.getString(IABGPP_GppString, null)?.takeIf { it.isNotBlank() }
         } catch (e: Exception) {
@@ -33,7 +33,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         }
     }
 
-    override suspend fun gppSid(): List<Int>? {
+    override fun gppSid(): List<Int>? {
         return try {
             val raw = sharedPrefs.getString(IABGPP_GppSID, null)?.takeIf { it.isNotBlank() }
             raw?.trim()?.split("_")?.mapNotNull { it.toIntOrNull() }?.takeIf { it.isNotEmpty() }
@@ -51,7 +51,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
      *
      * Use https://iabgpp.com/# to encode/decode GPP strings as test cases.
      */
-    override suspend fun decodedCcpa(): CcpaConsent? {
+    override fun decodedCcpa(): CcpaConsent? {
         val gpp = gppString() ?: return null.also { println("hop: No GPP string") }
         val sids = gppSid() ?: return null.also { println("hop: No GPP SID") }
         // TODO: possible to get 7_8?
@@ -126,7 +126,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         )
     }
 
-    override suspend fun isCoppaEnabled(): Boolean {
+    override fun isCoppaEnabled(): Boolean {
         return try {
             val value = sharedPrefs.getString(IABGPP_Coppa, null)?.toIntOrNull()
             when (value) {
