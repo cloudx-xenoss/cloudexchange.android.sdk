@@ -50,6 +50,7 @@ import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
  */
 internal class InitializationServiceImpl(
+    context: Context,
     private val configApi: ConfigApi,
     private val provideConfigRequest: ConfigRequestProvider,
     private val adapterResolver: AdapterFactoryResolver,
@@ -62,11 +63,11 @@ internal class InitializationServiceImpl(
     private val geoApi: GeoApi
 ) : InitializationService {
 
+    private val context: Context = context.applicationContext
     override val initialized: Boolean
         get() = config != null
 
     private var config: Config? = null
-    private var activity: Activity? = null
     private var appKey: String = ""
     private var basePayload: String = ""
 
@@ -96,7 +97,7 @@ internal class InitializationServiceImpl(
                             basePayload = basePayload,
                         )
 
-                        savePendingCrashReport(activity, pendingReport)
+                        savePendingCrashReport(pendingReport)
                     }
                 }
             )
@@ -122,16 +123,14 @@ internal class InitializationServiceImpl(
         }
     }
 
-    private fun savePendingCrashReport(activity: Activity?, report: PendingCrashReport) {
-        activity?.let {
-            val json = report.toJson().toString()
-            val prefs = activity.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
-            prefs.edit(commit = true) { putString("pending_crash", json) }
-        }
+    private fun savePendingCrashReport(report: PendingCrashReport) {
+        val json = report.toJson().toString()
+        val prefs = context.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
+        prefs.edit(commit = true) { putString("pending_crash", json) }
     }
 
     private fun getPendingCrashIfAny(): PendingCrashReport? {
-        val prefs = activity?.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("cloudx_crash_store", Context.MODE_PRIVATE)
         val pendingJson = prefs?.getString("pending_crash", null) ?: return null
 
         val pending = JSONObject(pendingJson).let { json ->
@@ -148,10 +147,9 @@ internal class InitializationServiceImpl(
         return pending
     }
 
-    override suspend fun initialize(appKey: String, activity: Activity): Result<Config, Error> =
+    override suspend fun initialize(appKey: String): Result<Config, Error> =
         mutex.withLock {
             this.appKey = appKey
-            this.activity = activity
 
             registerSdkCrashHandler()
 
@@ -221,7 +219,7 @@ internal class InitializationServiceImpl(
 
                 val appKeyOverride = cfg.appKeyOverride ?: appKey
                 initAdFactory(appKeyOverride, cfg, factories)
-                initializeAdapterNetworks(cfg, activity)
+                initializeAdapterNetworks(cfg, context)
 
                 metricsTrackerNew.trackNetworkCall(MetricsType.Network.GeoApi, geoRequestMillis)
             }
@@ -282,7 +280,7 @@ internal class InitializationServiceImpl(
         )
     }
 
-    private suspend fun initializeAdapterNetworks(config: Config, activity: Activity) {
+    private suspend fun initializeAdapterNetworks(config: Config, context: Context) {
         val adapterInitializers = factories?.initializers ?: return
 
         // Initialize only available adapters and if init config is present for them.
@@ -300,7 +298,7 @@ internal class InitializationServiceImpl(
             }
 
             adapterInitializers[bidderCfg.key]?.initialize(
-                activity,
+                context,
                 bidderCfg.value.initData,
                 privacyService.cloudXPrivacy
             )
@@ -330,9 +328,8 @@ internal class InitializationServiceImpl(
             accountId = cfg.accountId ?: "",
             appKey = appKey
         )
-        if (activity == null) return
         val bidRequestProvider = BidRequestProvider(
-            activity!!,
+            context,
             emptyMap()
         )
         val bidRequestParamsJson = bidRequestProvider.invoke(bidRequestParams, eventId)

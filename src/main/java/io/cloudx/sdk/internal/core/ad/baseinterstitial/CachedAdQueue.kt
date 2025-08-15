@@ -135,7 +135,9 @@ internal class CachedAdQueue<T : CacheableAd>(
 
             if (!isAdLoadOperationAvailable) {
                 adLoadOperationStatus = AdLoadOperationStatus.AdLoadOperationUnavailable
-            } else if (withTimeout(loadTimeoutMillis) { load() }) {
+            } else if (withTimeout(loadTimeoutMillis) {
+                    load()
+                }) {
                 adLoadOperationStatus = AdLoadOperationStatus.AdLoadSuccess
             }
         } catch (e: TimeoutCancellationException) {

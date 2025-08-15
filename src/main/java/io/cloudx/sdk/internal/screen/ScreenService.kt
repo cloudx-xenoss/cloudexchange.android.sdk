@@ -1,6 +1,6 @@
 package io.cloudx.sdk.internal.screen
 
-import android.app.Activity
+import android.content.Context
 
 internal interface ScreenService {
 
@@ -16,5 +16,5 @@ internal interface ScreenService {
     )
 }
 
-internal fun ScreenService(activity: Activity): ScreenService =
-    ScreenServiceImpl(activity)
+internal fun ScreenService(context: Context): ScreenService =
+    ScreenServiceImpl(context)

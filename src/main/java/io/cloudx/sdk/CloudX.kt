@@ -1,6 +1,7 @@
 package io.cloudx.sdk
 
 import android.app.Activity
+import android.content.Context
 import io.cloudx.sdk.CloudX.initialize
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adfactory.AdFactory
@@ -41,7 +42,10 @@ object CloudX {
      * @sample io.cloudx.sdk.samples.cloudXSetTargeting
      */
     @JvmStatic
-    @Deprecated("Use  setAppKeyValues() and setUserKeyValues() instead", ReplaceWith("setAppKeyValues() and setUserKeyValues()"))
+    @Deprecated(
+        "Use  setAppKeyValues() and setUserKeyValues() instead",
+        ReplaceWith("setAppKeyValues() and setUserKeyValues()")
+    )
     fun setTargeting(targeting: CloudXTargeting?) {
         targetingService.cloudXTargeting.value = targeting
     }
@@ -77,7 +81,7 @@ object CloudX {
     @JvmStatic
     @JvmOverloads
     fun initialize(
-        activity: Activity,
+        context: Context,
         initializationParams: InitializationParams,
         listener: CloudXInitializationListener? = null
     ) {
@@ -104,23 +108,24 @@ object CloudX {
 
             // Initial creation of InitializationService.
             val initializationService = InitializationService(
+                context = context,
                 configApi = ConfigApi(initializationParams.initEndpointUrl)
             )
             this@CloudX.initializationService = initializationService
             initializationService.metricsTrackerNew?.trackMethodCall(MetricsType.Method.SdkInitMethod)
 
             // Initializing SDK...
-            val initStatus = when (val result = initializationService.initialize(
-                initializationParams.appKey, activity
-            )) {
-                is Result.Failure -> CloudXInitializationStatus(
-                    initialized = false, result.value.description
-                )
+            val initStatus =
+                when (val result = initializationService.initialize(initializationParams.appKey)) {
+                    is Result.Failure -> CloudXInitializationStatus(
+                        initialized = false, result.value.description
+                    )
 
-                is Result.Success -> CloudXInitializationStatus(
-                    initialized = true, "CloudX SDK is initialized v${BuildConfig.SDK_VERSION_NAME}"
-                )
-            }
+                    is Result.Success -> CloudXInitializationStatus(
+                        initialized = true,
+                        "CloudX SDK is initialized v${BuildConfig.SDK_VERSION_NAME}"
+                    )
+                }
 
             listener?.onCloudXInitializationStatus(initStatus)
         }

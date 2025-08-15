@@ -1,6 +1,5 @@
 package io.cloudx.sdk.internal.screen
 
-import android.app.Activity
 import android.content.Context
 import android.util.DisplayMetrics
 import android.view.WindowManager
@@ -8,15 +7,15 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 
 internal class ScreenServiceImpl(
-    private val activity: Activity
+    private val context: Context
 ) : ScreenService {
 
     override suspend fun invoke(): ScreenService.ScreenData {
-        val windowManager = ContextCompat.getSystemService(activity, WindowManager::class.java)!!
+        val windowManager = ContextCompat.getSystemService(context, WindowManager::class.java)!!
 
         return with(windowManager) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                fromApi30AndAbove(activity)
+                fromApi30AndAbove(context)
             } else {
                 legacy()
             }
