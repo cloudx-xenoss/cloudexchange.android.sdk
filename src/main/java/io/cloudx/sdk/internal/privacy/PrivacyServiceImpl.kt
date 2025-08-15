@@ -25,6 +25,6 @@ internal class PrivacyServiceImpl(
     }
 
     override fun isCoppaEnabled(): Boolean {
-        return gppProvider.isCoppaEnabled()
+        return cloudXPrivacy.value.isAgeRestrictedUser == true
     }
 }

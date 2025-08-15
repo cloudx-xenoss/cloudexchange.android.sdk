@@ -10,7 +10,6 @@ internal interface GPPProvider {
     fun gppString(): String?
     fun gppSid(): List<Int>?
     fun decodedCcpa(): CcpaConsent?
-    fun isCoppaEnabled(): Boolean
 }
 
 internal fun GPPProvider(): GPPProvider = LazySingleInstance
@@ -129,21 +128,6 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
             saleOptOut = 0,       // unknown/N/A in this model
             sharingOptOut = sharingOptOutEffective,
         )
-    }
-
-    override fun isCoppaEnabled(): Boolean {
-        return try {
-            val value = sharedPrefs.getString(IABGPP_Coppa, null)?.toIntOrNull()
-            when (value) {
-                1 -> println("hop: COPPA applies (value=1)")
-                0 -> println("hop: COPPA does NOT apply (value=0)")
-                else -> println("hop: COPPA unknown or not set (value=$value)")
-            }
-            value == 1
-        } catch (e: Exception) {
-            println("hop: Error reading COPPA flag: ${e.message}")
-            false
-        }
     }
 
     private fun base64UrlToBits(encoded: String): String {

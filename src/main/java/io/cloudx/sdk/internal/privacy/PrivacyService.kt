@@ -16,6 +16,8 @@ internal interface PrivacyService : TCFProvider, USPrivacyProvider, GPPProvider 
     val cloudXPrivacy: MutableStateFlow<CloudXPrivacy>
 
     fun shouldClearPersonalData(): Boolean
+
+    fun isCoppaEnabled(): Boolean
 }
 
 internal fun PrivacyService(): PrivacyService = LazySingleInstance
