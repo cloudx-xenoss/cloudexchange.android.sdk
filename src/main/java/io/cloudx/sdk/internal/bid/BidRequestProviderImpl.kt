@@ -44,6 +44,10 @@ internal class BidRequestProviderImpl(
 
     override suspend fun invoke(params: BidRequestProvider.Params, auctionId: String): JSONObject =
         withContext(Dispatchers.IO) {
+
+            val piiRemove = privacyService.shouldClearPersonalData()
+            println("hop: piiRemove = $piiRemove for device object")
+
             val requestJson = JSONObject().apply {
 
                 put("id", auctionId)
@@ -75,7 +79,7 @@ internal class BidRequestProviderImpl(
                 val screenData = provideScreenData()
 
                 put("device", JSONObject().apply {
-
+                    // NON PII data
                     put("carrier", deviceInfo.mobileCarrier)
                     put(
                         "connectiontype",
@@ -85,38 +89,38 @@ internal class BidRequestProviderImpl(
 
                     put("dnt", isDnt)
                     put("lmt", isLmt)
-                    put("ifa", ifaOverride.ifEmpty { adPrivacyData.gaid })
+                    put("h", screenData.heightPx)
+                    put("w", screenData.widthPx)
+                    put("pxratio", screenData.pxRatio)
+                    put("ppi", screenData.dpi)
+                    put("make", deviceInfo.manufacturer)
+                    put("os", deviceInfo.os)
+                    put("osv", params.osVersionOld ?: deviceInfo.osVersion)
+                    put("js", 1)
+                    put("model", deviceInfo.model)
+                    put("hwv", deviceInfo.hwVersion)
+                    put("ua", provideUserAgent())
+                    put("language", deviceInfo.language)
 
+                    put(
+                        "ifa",
+                        if (piiRemove) "" else ifaOverride.ifEmpty { adPrivacyData.gaid })
                     put("geo", JSONObject().apply {
-
-                        locationProvider()?.let { ld ->
+                        val ld = locationProvider()
+                        if (piiRemove.not() && ld != null) {
                             put("lat", ld.lat)
                             put("lon", ld.lon)
                             put("accuracy", ld.accuracy)
                             put("type", 1) // 1 - gps/location services source.
                         }
-                        put("utcoffset", TimeZone.getDefault().getOffset(Date().time) / 60000 /* ms -> s*/)
+                        put(
+                            "utcoffset",
+                            TimeZone.getDefault().getOffset(Date().time) / 60000 /* ms -> s*/
+                        )
                         GeoInfoHolder.getGeoInfo().forEach { (key, value) ->
                             put(key, value)
                         }
                     })
-
-                    put("h", screenData.heightPx)
-                    put("w", screenData.widthPx)
-                    put("pxratio", screenData.pxRatio)
-                    put("ppi", screenData.dpi)
-
-                    put("make", deviceInfo.manufacturer)
-                    put("model", deviceInfo.model)
-                    put("hwv", deviceInfo.hwVersion)
-                    put("os", deviceInfo.os)
-                    put("osv", params.osVersionOld ?: deviceInfo.osVersion)
-
-                    put("ua", provideUserAgent())
-
-                    put("language", deviceInfo.language)
-
-                    put("js", 1)
                 })
 
                 put("imp", JSONArray().apply {
@@ -144,7 +148,8 @@ internal class BidRequestProviderImpl(
                                 screenData.widthDp to screenData.heightDp
                             }
 
-                            val pos = if (isBannerOrNative) /*UNKNOWN*/ 0 else /*AD_POSITION_FULLSCREEN*/ 7
+                            val pos =
+                                if (isBannerOrNative) /*UNKNOWN*/ 0 else /*AD_POSITION_FULLSCREEN*/ 7
                             val apis = SupportedOrtbAPIs
 
                             putBannerObject(apis, adSizeDp, pos)
@@ -177,7 +182,7 @@ internal class BidRequestProviderImpl(
 
             // === Inject keyValues ===
             keyValuePaths?.userKeyValues?.let { path ->
-                if (SdkKeyValueState.userKeyValues.isNotEmpty()) {
+                if (piiRemove.not() && SdkKeyValueState.userKeyValues.isNotEmpty()) {
                     val kvJson = JSONObject().apply {
                         SdkKeyValueState.userKeyValues.forEach { (k, v) -> put(k, v) }
                     }
@@ -195,18 +200,21 @@ internal class BidRequestProviderImpl(
             }
 
             // === Inject hashedKeyValues ===
+
             keyValuePaths?.eids?.let { path ->
-                SdkKeyValueState.hashedUserId?.let { hashedData ->
-                    val eid = JSONObject().apply {
-                        put("source", provideAppInfo.invoke().packageName)
-                        put("uids", JSONArray().apply {
-                            put(JSONObject().apply {
-                                put("id", hashedData)
-                                put("atype", 3)
+                if (piiRemove.not() && SdkKeyValueState.hashedUserId != null) {
+                    SdkKeyValueState.hashedUserId.let { hashedData ->
+                        val eid = JSONObject().apply {
+                            put("source", provideAppInfo.invoke().packageName)
+                            put("uids", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("id", hashedData)
+                                    put("atype", 3)
+                                })
                             })
-                        })
+                        }
+                        requestJson.putAtDynamicPath(path, eid)
                     }
-                    requestJson.putAtDynamicPath(path, eid)
                 }
             }
 
@@ -294,10 +302,13 @@ fun JSONObject.putAtDynamicPath(path: String, value: Any) {
 }
 
 private suspend fun JSONObject.putRegsObject(privacyService: PrivacyService) {
+    val shouldClear = privacyService.shouldClearPersonalData()
+    println("hop: shouldClear = $shouldClear")
+
     put("regs", JSONObject().apply {
         val cloudXPrivacy = privacyService.cloudXPrivacy.value
 
-        put("coppa", cloudXPrivacy.isAgeRestrictedUser.toOrtbRegsValue())
+        put("coppa", privacyService.isCoppaEnabled().toOrtbRegsValue())
 
         put("ext", JSONObject().apply {
             put("gdpr_consent", cloudXPrivacy.isUserConsent.toOrtbRegsValue())

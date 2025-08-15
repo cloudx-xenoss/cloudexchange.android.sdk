@@ -248,6 +248,7 @@ internal class InitializationServiceImpl(
         factories = null
         adFactory = null
         metricsTrackerNew.stop()
+        TrackingFieldResolver.clear()
     }
 
     private var factories: BidAdNetworkFactories? = null

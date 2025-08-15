@@ -92,12 +92,12 @@ internal object TrackingFieldResolver {
         this.hashedGeoIp = hashedGeoIp
     }
 
-    fun clear(auctionId: String) {
-        requestDataMap.remove(auctionId)
-        responseDataMap.remove(auctionId)
-        loadedBidMap.remove(auctionId)
-        sdkMap.remove(auctionId)
-        auctionedLoopIndex.remove(auctionId)
+    fun clear() {
+        requestDataMap.clear()
+        responseDataMap.clear()
+        loadedBidMap.clear()
+        sdkMap.clear()
+        auctionedLoopIndex.clear()
     }
 
     private fun Any?.resolveNestedField(path: String): Any? {

@@ -14,6 +14,8 @@ internal interface PrivacyService : TCFProvider, USPrivacyProvider, GPPProvider 
      * such as TCF TC string (GDPR) or US Privacy String (CCPA)
      */
     val cloudXPrivacy: MutableStateFlow<CloudXPrivacy>
+
+    suspend fun shouldClearPersonalData(): Boolean
 }
 
 internal fun PrivacyService(): PrivacyService = LazySingleInstance
