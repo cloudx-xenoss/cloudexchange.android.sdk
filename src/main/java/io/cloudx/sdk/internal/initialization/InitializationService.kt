@@ -1,8 +1,8 @@
 package io.cloudx.sdk.internal.initialization
 
-import android.app.Activity
-import io.cloudx.sdk.internal.Error
+import android.content.Context
 import io.cloudx.sdk.Result
+import io.cloudx.sdk.internal.Error
 import io.cloudx.sdk.internal.adfactory.AdFactory
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
 import io.cloudx.sdk.internal.config.Config
@@ -31,7 +31,7 @@ internal interface InitializationService {
      * @param appKey - unique application key/identifier; comes from app's Publisher.
      * @return [Config] upon successful initialization, [Error] otherwise
      */
-    suspend fun initialize(appKey: String, activity: Activity): Result<Config, Error>
+    suspend fun initialize(appKey: String): Result<Config, Error>
 
     /**
      * Ad factory - null when SDK is not [initialized]
@@ -44,6 +44,7 @@ internal interface InitializationService {
 }
 
 internal fun InitializationService(
+    context: Context,
     configApi: ConfigApi,
     provideConfigRequest: ConfigRequestProvider = ConfigRequestProvider(),
     adapterFactoryResolver: AdapterFactoryResolver = AdapterFactoryResolver(),
@@ -56,6 +57,7 @@ internal fun InitializationService(
     geoApi: GeoApi = GeoApi()
 ): InitializationService =
     InitializationServiceImpl(
+        context,
         configApi,
         provideConfigRequest,
         adapterFactoryResolver,

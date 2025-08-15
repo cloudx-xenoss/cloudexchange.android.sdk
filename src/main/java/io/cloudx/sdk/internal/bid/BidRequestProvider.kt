@@ -1,6 +1,6 @@
 package io.cloudx.sdk.internal.bid
 
-import android.app.Activity
+import android.content.Context
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.AdType
@@ -48,14 +48,14 @@ internal fun BidRequestProvider.Params.withEffectiveAdId(): String {
 
 
 internal fun BidRequestProvider(
-    activity: Activity,
+    context: Context,
     bidRequestExtrasProviders: Map<AdNetwork, BidRequestExtrasProvider>
 ) = BidRequestProviderImpl(
-    activity.applicationContext,
+    context.applicationContext,
     BuildConfig.SDK_VERSION_NAME,
     AppInfoProvider(),
     DeviceInfoProvider(),
-    ScreenService(activity),
+    ScreenService(context),
     ConnectionStatusService(),
     UserAgentProvider(),
     GAIDProvider(),
