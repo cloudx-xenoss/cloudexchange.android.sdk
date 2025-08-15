@@ -54,15 +54,20 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
     override fun decodedCcpa(): CcpaConsent? {
         val gpp = gppString() ?: return null.also { println("hop: No GPP string") }
         val sids = gppSid() ?: return null.also { println("hop: No GPP SID") }
-        // TODO: possible to get 7_8?
 
-        // Prefer US-California (SID=8). Fallback to US-National (SID=7).
-        return when {
-            8 in sids -> decodeUsCa(gpp)
-            7 in sids -> decodeUsNational(gpp)
-            else -> null.also { println("hop: No USCA(8) or USNational(7) present") }
+        val decodedList = sids.mapNotNull { sid ->
+            when (sid) {
+                8 -> decodeUsCa(gpp)
+                7 -> decodeUsNational(gpp)
+                // TODO: Add more SIDs as needed
+                else -> null
+            }
         }
+
+        return decodedList.find { it.requiresPiiRemoval() }
+            ?: decodedList.firstOrNull()
     }
+
 
     private fun decodeUsCa(gpp: String): CcpaConsent? {
         val parts = gpp.split("~")
