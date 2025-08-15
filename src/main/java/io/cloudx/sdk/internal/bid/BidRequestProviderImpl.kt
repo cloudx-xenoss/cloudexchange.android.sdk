@@ -102,9 +102,7 @@ internal class BidRequestProviderImpl(
                     put("ua", provideUserAgent())
                     put("language", deviceInfo.language)
 
-                    put(
-                        "ifa",
-                        if (piiRemove) "" else ifaOverride.ifEmpty { adPrivacyData.gaid })
+                    put("ifa", if (piiRemove) "" else ifaOverride.ifEmpty { adPrivacyData.gaid })
                     put("geo", JSONObject().apply {
                         val ld = locationProvider()
                         if (piiRemove.not() && ld != null) {
