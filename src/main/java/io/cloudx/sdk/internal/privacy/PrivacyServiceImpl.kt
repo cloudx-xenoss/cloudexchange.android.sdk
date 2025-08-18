@@ -9,19 +9,24 @@ internal class PrivacyServiceImpl(
     tcfProvider: TCFProvider,
     usPrivacyProvider: USPrivacyProvider,
     val gppProvider: GPPProvider
-) : PrivacyService,
-    TCFProvider by tcfProvider,
-    USPrivacyProvider by usPrivacyProvider,
+) : PrivacyService, TCFProvider by tcfProvider, USPrivacyProvider by usPrivacyProvider,
     GPPProvider by gppProvider {
 
     override fun shouldClearPersonalData(): Boolean {
-        val isCoppa = isCoppaEnabled()
-        val isCaliforniaUser = GeoInfoHolder.isCaliforniaUser()
-        val ccpa = if (isCaliforniaUser) decodedCcpa() else null
+        val isUSUser = GeoInfoHolder.isUSUser()
+        if (!isUSUser) {
+            return false // Non US users do not require personal data clearing
+        }
 
-        val shouldClear = isCoppa || ccpa?.requiresPiiRemoval() == true
-        println("hop: shouldClearPersonalData = $shouldClear (COPPA=$isCoppa, CA=$isCaliforniaUser)")
-        return shouldClear
+        // US user
+        val isCoppa = isCoppaEnabled()
+        if (isCoppa) {
+            return true // COPPA users always require personal data clearing within the US
+        }
+
+        val ca = decodedCcpa() // only checks for section 7 and 8 for now
+        val clear = ca?.requiresPiiRemoval() == true
+        return clear
     }
 
     override fun isCoppaEnabled(): Boolean {
