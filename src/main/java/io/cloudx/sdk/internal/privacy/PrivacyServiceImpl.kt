@@ -24,8 +24,13 @@ internal class PrivacyServiceImpl(
             return true // COPPA users always require personal data clearing within the US
         }
 
-        val ca = decodedCcpa() // only checks for section 7 and 8 for now
-        val clear = ca?.requiresPiiRemoval() == true
+        val isCaliforniaUser = GeoInfoHolder.isCaliforniaUser()
+        val gppConsent = if (isCaliforniaUser) {
+            decodeGpp(GppTarget.US_CA)
+        } else {
+            decodeGpp(GppTarget.US_NATIONAL)
+        }
+        val clear = gppConsent?.requiresPiiRemoval() == true
         return clear
     }
 

@@ -9,7 +9,7 @@ import io.cloudx.sdk.internal.CloudXLogger
 internal interface GPPProvider {
     fun gppString(): String?
     fun gppSid(): List<Int>?
-    fun decodedCcpa(): CcpaConsent?
+    fun decodeGpp(target: GppTarget? = null): GppConsent?
 }
 
 internal fun GPPProvider(): GPPProvider = LazySingleInstance
@@ -50,25 +50,29 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
      *
      * Use https://iabgpp.com/# to encode/decode GPP strings as test cases.
      */
-    override fun decodedCcpa(): CcpaConsent? {
-        val gpp = gppString() ?: return null.also { println("hop: No GPP string") }
-        val sids = gppSid() ?: return null.also { println("hop: No GPP SID") }
+    override fun decodeGpp(target: GppTarget?): GppConsent? {
+        val gpp = gppString() ?: return null
+        val sids = gppSid() ?: return null
 
-        val decodedList = sids.mapNotNull { sid ->
-            when (sid) {
-                8 -> decodeUsCa(gpp)
-                7 -> decodeUsNational(gpp)
-                // TODO: Add more SIDs as needed
-                else -> null
+        if (target == null) {
+            val decodedList = sids.mapNotNull { sid ->
+                when (sid) {
+                    8 -> decodeUsCa(gpp)
+                    7 -> decodeUsNational(gpp)
+                    // TODO: Add more SIDs as needed
+                    else -> null
+                }
             }
+            return decodedList.find { it.requiresPiiRemoval() } ?: decodedList.firstOrNull()
+        } else {
+            return when (target) {
+                GppTarget.US_CA -> decodeUsCa(gpp)
+                GppTarget.US_NATIONAL -> decodeUsNational(gpp)
+            }?.takeIf { it.requiresPiiRemoval() }
         }
-
-        return decodedList.find { it.requiresPiiRemoval() }
-            ?: decodedList.firstOrNull()
     }
 
-
-    private fun decodeUsCa(gpp: String): CcpaConsent? {
+    private fun decodeUsCa(gpp: String): GppConsent? {
         val parts = gpp.split("~")
         val corePayload = parts.getOrNull(1)?.substringBefore('.') ?: return null
 
@@ -83,9 +87,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         val saleOptOut = read(12, 2)
         val sharingOptOut = read(14, 2)
 
-        println("hop[USCA]: ver=$version saleNotice=$saleOptOutNotice shareNotice=$sharingOptOutNotice saleOptOut=$saleOptOut sharingOptOut=$sharingOptOut")
-
-        return CcpaConsent(
+        return GppConsent(
             saleOptOutNotice = saleOptOutNotice,
             sharingOptOutNotice = sharingOptOutNotice,
             saleOptOut = saleOptOut,
@@ -93,7 +95,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         )
     }
 
-    private fun decodeUsNational(gpp: String): CcpaConsent? {
+    private fun decodeUsNational(gpp: String): GppConsent? {
         // GPP: <header>~<USNational payload>[.<GPC?>]
         val payload = gpp.split("~").getOrNull(1)?.substringBefore('.') ?: return null
         val bits = base64UrlToBits(payload)
@@ -101,8 +103,6 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         val saleOptOutNoticeBit = bits.getOrNull(8)?.digitToIntOrNull()    // 0/1
         val sharingOptOutBit = bits.getOrNull(15)?.digitToIntOrNull()      // 0/1
         val targetedOptOutBit = bits.getOrNull(16)?.digitToIntOrNull()     // 0/1
-
-        println("hop[USNat]: saleNoticeBit=$saleOptOutNoticeBit shareOptOutBit=$sharingOptOutBit targOptOutBit=$targetedOptOutBit")
 
         // Map to USCA-like 2-bit semantics just to drive PII rules:
         val saleOptOutNotice = when (saleOptOutNoticeBit) {
@@ -122,7 +122,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
             else -> null
         }
 
-        return CcpaConsent(
+        return GppConsent(
             saleOptOutNotice = saleOptOutNotice,
             sharingOptOutNotice = 1,       // assume a notice was provided if the bit model lacks it
             saleOptOut = 0,       // unknown/N/A in this model
@@ -144,7 +144,7 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
     }
 }
 
-internal data class CcpaConsent(
+internal data class GppConsent(
     // USCA (SID=8) core:
     val saleOptOutNotice: Int?,        // 0=N/A, 1=Yes, 2=No
     val sharingOptOutNotice: Int?,     // 0=N/A, 1=Yes, 2=No
@@ -158,4 +158,9 @@ internal data class CcpaConsent(
         // - (Optional) If GPC == true -> obfuscate PII
         return (saleOptOut == 1) || (sharingOptOut == 1) || (saleOptOutNotice == 2) || (sharingOptOutNotice == 2)
     }
+}
+
+internal enum class GppTarget {
+    US_CA,       // US California (SID=8)
+    US_NATIONAL, // US National (SID=7)
 }
