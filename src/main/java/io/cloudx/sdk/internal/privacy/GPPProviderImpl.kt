@@ -160,6 +160,11 @@ internal data class GppConsent(
     }
 }
 
+/**
+ * This enum class defines the GPP targets for decoding.
+ * It includes US California (SID=8) and US National (SID=7).
+ * These targets are used for initial SDK release and may be deprecated in the future
+ */
 internal enum class GppTarget {
     US_CA,       // US California (SID=8)
     US_NATIONAL, // US National (SID=7)
