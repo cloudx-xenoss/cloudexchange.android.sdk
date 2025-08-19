@@ -156,10 +156,9 @@ internal fun bidAdDecoration(
 
         val scope = GlobalScopes.IO
         scope.launch {
-            val clickCount = ClickCounterTracker.incrementAndGet(auctionId)
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
             var payload = TrackingFieldResolver.buildPayload(auctionId)
-            payload = payload?.replace(auctionId, "$auctionId-$clickCount")
+            payload = payload?.replace(auctionId, auctionId)
             val accountId = TrackingFieldResolver.getAccountId()
 
             if (payload != null && accountId != null) {
@@ -176,7 +175,10 @@ internal fun bidAdDecoration(
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)
             val clickCount = ClickCounterTracker.incrementAndGet(auctionId)
 
-            val payload = TrackingFieldResolver.buildPayload("$auctionId-$clickCount")
+            val payload = TrackingFieldResolver.buildPayload(auctionId)?.replace(
+                auctionId,
+                "$auctionId-$clickCount"
+            )
             val accountId = TrackingFieldResolver.getAccountId()
 
             if (payload != null && accountId != null) {
