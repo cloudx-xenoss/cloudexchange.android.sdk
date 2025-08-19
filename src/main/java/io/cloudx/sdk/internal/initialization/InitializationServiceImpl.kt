@@ -207,7 +207,10 @@ internal class InitializationServiceImpl(
                     TrackingFieldResolver.setHashedGeoIp(hashedGeoIp)
 
                     CloudXLogger.info("MainActivity", "geo data: $geoInfo")
-                    GeoInfoHolder.setGeoInfo(geoInfo)
+                    GeoInfoHolder.setGeoInfo(geoInfo, headersMap)
+
+                    val removePii = privacyService.shouldClearPersonalData()
+                    CloudXLogger.info("MainActivity", "PII remove: $removePii")
 
                     sendInitSDKEvent(cfg, appKey)
 

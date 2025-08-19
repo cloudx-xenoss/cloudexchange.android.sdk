@@ -54,22 +54,28 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         val gpp = gppString() ?: return null
         val sids = gppSid() ?: return null
 
-        if (target == null) {
-            val decodedList = sids.mapNotNull { sid ->
-                when (sid) {
-                    8 -> decodeUsCa(gpp)
-                    7 -> decodeUsNational(gpp)
-                    // TODO: Add more SIDs as needed
-                    else -> null
-                }
-            }
-            return decodedList.find { it.requiresPiiRemoval() } ?: decodedList.firstOrNull()
+        return if (target == null) {
+            val decodedList = listOfNotNull(
+                decodeIfPresent(gpp, sids, 8, ::decodeUsCa),
+                decodeIfPresent(gpp, sids, 7, ::decodeUsNational)
+                // TODO: add more sections as needed
+            )
+            decodedList.find { it.requiresPiiRemoval() } ?: decodedList.firstOrNull()
         } else {
-            return when (target) {
-                GppTarget.US_CA -> decodeUsCa(gpp)
-                GppTarget.US_NATIONAL -> decodeUsNational(gpp)
+            when (target) {
+                GppTarget.US_CA -> decodeIfPresent(gpp, sids, 8, ::decodeUsCa)
+                GppTarget.US_NATIONAL -> decodeIfPresent(gpp, sids, 7, ::decodeUsNational)
             }?.takeIf { it.requiresPiiRemoval() }
         }
+    }
+
+    private fun decodeIfPresent(
+        gpp: String,
+        sids: List<Int>,
+        sid: Int,
+        decode: (String) -> GppConsent?
+    ): GppConsent? {
+        return if (sid in sids) decode(gpp) else null
     }
 
     private fun decodeUsCa(gpp: String): GppConsent? {
@@ -104,7 +110,6 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
         val sharingOptOutBit = bits.getOrNull(15)?.digitToIntOrNull()      // 0/1
         val targetedOptOutBit = bits.getOrNull(16)?.digitToIntOrNull()     // 0/1
 
-        // Map to USCA-like 2-bit semantics just to drive PII rules:
         val saleOptOutNotice = when (saleOptOutNoticeBit) {
             1 -> 1 // "Yes" (notice provided)
             0 -> 2 // "No" (treat as notice not provided)
@@ -115,7 +120,6 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
             0 -> 2 // Did not opt out
             else -> null
         }
-        // We’ll fold targetedOptOut into "sharing" effect for decisioning:
         val sharingOptOutEffective = sharingOptOut ?: when (targetedOptOutBit) {
             1 -> 1
             0 -> 2
@@ -124,8 +128,8 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
 
         return GppConsent(
             saleOptOutNotice = saleOptOutNotice,
-            sharingOptOutNotice = 1,       // assume a notice was provided if the bit model lacks it
-            saleOptOut = 0,       // unknown/N/A in this model
+            sharingOptOutNotice = 1, // assume notice was provided
+            saleOptOut = 0,          // unknown/N/A in this model
             sharingOptOut = sharingOptOutEffective,
         )
     }

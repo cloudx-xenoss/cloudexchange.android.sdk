@@ -8,27 +8,29 @@ object GeoInfoHolder {
     private const val COUNTRY_USA = "USA"
 
     @Volatile
-    private var geoInfo: Map<String, String>? = null
+    private var processedGeoInfo: Map<String, String>? = null
+    private var rawGeoInfo: Map<String, String> = emptyMap()
 
-    fun setGeoInfo(info: Map<String, String>) {
-        geoInfo = info
+    fun setGeoInfo(processedGeoInfo: Map<String, String>, rawGeoInfo: Map<String, String>) {
+        this.processedGeoInfo = processedGeoInfo
+        this.rawGeoInfo = rawGeoInfo
     }
 
     fun getGeoInfo(): Map<String, String> =
-        geoInfo ?: emptyMap()
+        processedGeoInfo ?: emptyMap()
 
     fun isUSUser(): Boolean {
-        return getGeoInfo()[KEY_COUNTRY]?.lowercase() == COUNTRY_USA.lowercase()
+        return rawGeoInfo[KEY_COUNTRY]?.lowercase() == COUNTRY_USA.lowercase()
     }
 
     fun isCaliforniaUser(): Boolean {
         if (isUSUser()) {
-            return getGeoInfo()[KEY_REGION]?.lowercase() == REGION_CALIFORNIA.lowercase()
+            return rawGeoInfo[KEY_REGION]?.lowercase() == REGION_CALIFORNIA.lowercase()
         }
         return false
     }
 
     fun clear() {
-        geoInfo = null
+        processedGeoInfo = null
     }
 }
