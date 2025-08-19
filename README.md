@@ -72,12 +72,20 @@ dependencies {
 
 Integrate additional adapters as needed for your ad mediation:
 
-- [Google Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-google)
-- [CloudX Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-cloudx)
-- [Mintegral Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-mintegral)
-- [Meta Adapter](https://github.com/cloudx-xenoss/cloudexchange.android.adapter-meta)
+```kotlin
+dependencies {
+    implementation("io.cloudx:sdk:<latest-version>")
 
-> Visit each link for setup guides and available versions.
+    // Add adapters as needed:
+    implementation("io.cloudx:adapter-google:<latest-version>")
+    implementation("io.cloudx:adapter-cloudx:<latest-version>")
+    implementation("io.cloudx:adapter-mintegral:<latest-version>")
+    implementation("io.cloudx:adapter-meta:<latest-version>")
+    implementation("io.cloudx:adapter-testbidder:<latest-version>")
+}
+```
+
+> All adapters are part of this unified repository and published to Maven Central.
 
 ## License
 

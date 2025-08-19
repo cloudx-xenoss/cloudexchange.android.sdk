@@ -95,7 +95,7 @@ mavenPublishing {
         name.set("CloudX Adapter - TestBidder")
         description.set("An Adapter for the CloudX Android SDK: TestBidder Implementation")
         inceptionYear.set("2025")
-        url.set("https://github.com/cloudx-xenoss/cloudexchange.android.adapter-testbidder")
+        url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
         licenses {
             license {
                 name.set("Elastic License 2.0")
