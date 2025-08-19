@@ -111,9 +111,9 @@ mavenPublishing {
             }
         }
         scm {
-            url.set("https://github.com/cloudx-xenoss/cloudexchange.android.adapter-cloudx")
-            connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.adapter-cloudx.git")
-            developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.adapter-cloudx.git")
+            url.set("https://github.com/cloudx-xenoss/cloudexchange.android.sdk")
+            connection.set("scm:git:git://github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
+            developerConnection.set("scm:git:ssh://git@github.com/cloudx-xenoss/cloudexchange.android.sdk.git")
         }
     }
 }
