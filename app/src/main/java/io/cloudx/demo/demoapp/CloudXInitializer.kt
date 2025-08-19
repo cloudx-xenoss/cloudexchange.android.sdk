@@ -1,0 +1,134 @@
+package io.cloudx.demo.demoapp
+
+import android.app.Activity
+import android.content.Context
+import androidx.preference.PreferenceManager
+import io.cloudx.sdk.CloudX
+import io.cloudx.sdk.CloudXInitializationListener
+import io.cloudx.sdk.CloudXPrivacy
+import io.cloudx.sdk.CloudXTargeting
+import io.cloudx.sdk.internal.CloudXLogger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+object CloudXInitializer {
+
+    private val _initState = MutableStateFlow(InitializationState.NotInitialized)
+    val initState = _initState.asStateFlow()
+
+    fun initializeCloudX(
+        activity: Activity,
+        settings: Settings,
+        hashedUserId: String? = null,
+        logTag: String,
+        listener: CloudXInitializationListener? = null
+    ) {
+        _initState.value = InitializationState.InProgress
+
+        activity.updateIabTcfGdprAppliesSharedPrefs()
+        activity.updateGppSharedPrefs()
+
+        CloudX.setPrivacy(
+            CloudXPrivacy(
+                isUserConsent = settings.gdprConsent,
+                isAgeRestrictedUser = settings.ageRestricted
+            ).also {
+                CloudXLogger.info(logTag, "CloudX privacy set: $it")
+            }
+        )
+
+        settings.trySetTargeting(logTag)
+
+        CloudX.initialize(
+            activity,
+            CloudX.InitializationParams(
+                appKey = settings.appKey,
+                initEndpointUrl = settings.initUrl,
+                hashedUserId = hashedUserId
+            )
+        ) {
+
+            _initState.value = if (it.initialized) {
+                InitializationState.Initialized
+            } else {
+                InitializationState.FailedToInitialize
+            }
+
+            listener?.onCloudXInitializationStatus(it)
+        }
+    }
+
+    fun reset() {
+        _initState.value = InitializationState.NotInitialized
+    }
+}
+
+enum class InitializationState {
+    NotInitialized, InProgress, FailedToInitialize, Initialized
+}
+
+// Can't do it directly, since that would require to write a custom preference control which saves int to shared prefs.
+// So we do mapping from string -> int basically, since IABTCF_gdprApplies must hold Integer.
+// > Note: For mobile all booleans are written as Number (integer)
+// https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean
+private fun Context.updateIabTcfGdprAppliesSharedPrefs() {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    val gdprApplies: Boolean? = prefs.toPrivacyFlag(getString(R.string.pref_iab_tcf_gdpr_applies))
+
+    prefs.edit().apply {
+        val iabGdprAppliesKey = "IABTCF_gdprApplies"
+
+        when (gdprApplies) {
+            true -> putInt(iabGdprAppliesKey, 1)
+            false -> putInt(iabGdprAppliesKey, 0)
+            null -> remove(iabGdprAppliesKey)
+        }
+        apply()
+    }
+}
+
+private fun Settings.trySetTargeting(logTag: String) {
+    val targeting = if (mockUserTargetingEnabled) {
+        CloudXTargeting(
+            userID = "mock_user_id",
+            age = 69,
+            yob = 1969,
+            gender = CloudXTargeting.Gender.Female,
+            keywords = listOf("hello", "moto"),
+            data = mapOf("category" to "music", "something" to "nothing")
+        )
+    } else {
+        null
+    }
+
+    CloudX.setTargeting(targeting)
+    CloudXLogger.info(logTag, "CloudX targeting set: $targeting")
+}
+
+private fun Context.updateGppSharedPrefs() {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+    val gppStringKey = "pref_iab_gpp_string"
+    val gppSidKey = "pref_iab_gpp_sid"
+
+    val gppString = prefs.getString(gppStringKey, null)
+    val gppSid = prefs.getString(gppSidKey, null)
+
+    println("CloudXInitializer: gppString: $gppString, gppSid: $gppSid")
+
+    prefs.edit().apply {
+        if (!gppString.isNullOrBlank()) {
+            putString("IABGPP_HDR_GppString", gppString)
+        } else {
+            remove("IABGPP_HDR_GppString")
+        }
+
+        if (!gppSid.isNullOrBlank()) {
+            putString("IABGPP_GppSID", gppSid)
+        } else {
+            remove("IABGPP_GppSID")
+        }
+
+        apply()
+    }
+}
