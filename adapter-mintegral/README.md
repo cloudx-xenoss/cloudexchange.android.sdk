@@ -1,0 +1,1 @@
+# cloudexchange.adapter-mintegral.internal
