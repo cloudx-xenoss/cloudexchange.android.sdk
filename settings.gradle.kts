@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "cloudx-demo"
+rootProject.name = "cloudx-sdk"
 include(":app")
 
 // local dev
