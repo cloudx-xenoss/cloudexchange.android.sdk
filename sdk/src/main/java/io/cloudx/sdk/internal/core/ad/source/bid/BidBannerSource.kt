@@ -39,7 +39,6 @@ internal fun BidBannerSource(
     metricsTrackerNew: MetricsTrackerNew,
     miscParams: BannerFactoryMiscParams,
     bidRequestTimeoutMillis: Long,
-    lineItems: List<Config.LineItem>?,
     accountId: String,
     appKey: String
 ): BidAdSource<SuspendableBanner> =
@@ -49,7 +48,6 @@ internal fun BidBannerSource(
             adId = placementId,
             adType = placementType,
             placementName = placementName,
-            lineItems = lineItems,
             accountId = accountId,
             appKey = appKey
         ),

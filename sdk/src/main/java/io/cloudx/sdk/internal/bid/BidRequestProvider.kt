@@ -6,7 +6,6 @@ import io.cloudx.sdk.internal.AdNetwork
 import io.cloudx.sdk.internal.AdType
 import io.cloudx.sdk.internal.adapter.BidRequestExtrasProvider
 import io.cloudx.sdk.internal.appinfo.AppInfoProvider
-import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.gaid.GAIDProvider
@@ -26,7 +25,6 @@ internal interface BidRequestProvider {
         val adId: String,
         val adType: AdType,
         val placementName: String,
-        val lineItems: List<Config.LineItem>?,
         val accountId: String,
         val appKey: String,
         val osVersionOld: Int? = null

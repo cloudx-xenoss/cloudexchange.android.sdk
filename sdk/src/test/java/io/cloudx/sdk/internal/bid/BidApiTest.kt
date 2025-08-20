@@ -61,7 +61,6 @@ class BidApiTest: RoboMockkTest() {
         val params = BidRequestProvider.Params(
             adId = "mrec-300x250-538295628539",
             adType = AdType.Banner.MREC,
-            lineItems = emptyList(),
             placementName = "",
             accountId = "",
             appKey = ""

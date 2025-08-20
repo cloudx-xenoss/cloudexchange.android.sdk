@@ -123,7 +123,6 @@ private fun JSONArray.toPlacements(): Map<String, Config.Placement> {
         val adLoadTimeoutMillis = jsonPlacement.getInt("adLoadTimeoutMs")
         val placementType = jsonPlacement.getString("type")
         val hasCloseButton = jsonPlacement.opt("hasCloseButton") as? Boolean ?: false
-        val lineItems = jsonPlacement.toLineItems()
 
         val placement = when (placementType.uppercase()) {
 
@@ -133,8 +132,7 @@ private fun JSONArray.toPlacements(): Map<String, Config.Placement> {
                 bidResponseTimeoutMillis,
                 adLoadTimeoutMillis,
                 refreshRateMillis = jsonPlacement.getInt("bannerRefreshRateMs"),
-                hasCloseButton,
-                lineItems
+                hasCloseButton
             )
 
             "MREC" -> Config.Placement.MREC(
@@ -143,16 +141,15 @@ private fun JSONArray.toPlacements(): Map<String, Config.Placement> {
                 bidResponseTimeoutMillis,
                 adLoadTimeoutMillis,
                 refreshRateMillis = jsonPlacement.getInt("bannerRefreshRateMs"),
-                hasCloseButton,
-                lineItems
+                hasCloseButton
             )
 
             "INTERSTITIAL" -> Config.Placement.Interstitial(
-                id, name, bidResponseTimeoutMillis, adLoadTimeoutMillis, lineItems
+                id, name, bidResponseTimeoutMillis, adLoadTimeoutMillis
             )
 
             "REWARDED" -> Config.Placement.Rewarded(
-                id, name, bidResponseTimeoutMillis, adLoadTimeoutMillis, lineItems
+                id, name, bidResponseTimeoutMillis, adLoadTimeoutMillis
             )
 
             "NATIVE" -> Config.Placement.Native(
@@ -163,8 +160,7 @@ private fun JSONArray.toPlacements(): Map<String, Config.Placement> {
                 jsonPlacement.toNativeTemplateType(),
                 // TODO. getInt() once back-end supports.
                 refreshRateMillis = jsonPlacement.optInt("bannerRefreshRateMs", 900_000),
-                hasCloseButton,
-                lineItems
+                hasCloseButton
             )
 
             else -> {
@@ -187,54 +183,6 @@ private fun JSONObject.toNativeTemplateType(): Config.Placement.Native.TemplateT
         "medium" -> Config.Placement.Native.TemplateType.Medium
         else -> Config.Placement.Native.TemplateType.Unknown(templateString)
     }
-
-private fun JSONObject.toLineItems(): List<Config.LineItem> {
-    val lineItems = mutableListOf<Config.LineItem>()
-    val array = optJSONArray("line_items") ?: return lineItems
-
-    for (i in 0 until array.length()) {
-        val itemObj = array.getJSONObject(i)
-
-        val suffix = itemObj.optString("suffix", null)
-        val targetingObj = itemObj.optJSONObject("targeting")
-
-        val targeting = targetingObj?.let {
-            val strategy = it.optString("strategy", "Default")
-            val conditionsAnd = it.optBoolean("conditionsAnd", false)
-            val conditionsArray = it.optJSONArray("conditions") ?: JSONArray()
-
-            val conditions = mutableListOf<Config.LineItem.Condition>()
-            for (j in 0 until conditionsArray.length()) {
-                val conditionObj = conditionsArray.getJSONObject(j)
-
-                val whitelist =
-                    conditionObj.optJSONArray("whitelist")?.toFilterList() ?: emptyList()
-                val blacklist =
-                    conditionObj.optJSONArray("blacklist")?.toFilterList() ?: emptyList()
-                val and = conditionObj.optBoolean("and", false)
-
-                conditions += Config.LineItem.Condition(whitelist, blacklist, and)
-            }
-
-            Config.LineItem.Targeting(strategy, conditionsAnd, conditions)
-        }
-
-        lineItems += Config.LineItem(suffix = suffix, targeting = targeting)
-    }
-
-    return lineItems
-}
-
-private fun JSONArray.toFilterList(): List<Map<String, Any>> {
-    val list = mutableListOf<Map<String, Any>>()
-    for (i in 0 until length()) {
-        val obj = getJSONObject(i)
-        val map = mutableMapOf<String, Any>()
-        obj.keys().forEach { key -> map[key] = obj[key] }
-        list += map
-    }
-    return list
-}
 
 internal fun JSONObject.toEndpointConfig(field: String): Config.EndpointConfig {
     val raw = opt(field)

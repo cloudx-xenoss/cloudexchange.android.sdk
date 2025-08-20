@@ -48,8 +48,6 @@ internal class AdFactoryImpl(
             logCantFindPlacement(placementName)
             return null
         }
-        val lineItems = placement.lineItems
-
         val bidApi = createBidApi(placement.bidResponseTimeoutMillis)
 
         return Interstitial(
@@ -71,7 +69,6 @@ internal class AdFactoryImpl(
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
             listener = params.listener.decorate(),
-            lineItems = lineItems,
             accountId = config.accountId ?: "",
             appKey = appKey
         )
@@ -84,8 +81,6 @@ internal class AdFactoryImpl(
             logCantFindPlacement(placementName)
             return null
         }
-        val lineItems = placement.lineItems
-
         val bidApi = createBidApi(placement.bidResponseTimeoutMillis)
 
         return RewardedInterstitial(
@@ -107,7 +102,6 @@ internal class AdFactoryImpl(
             appLifecycleService = appLifecycleService,
             // TODO. Nullable support.
             listener = params.listener.decorate(),
-            lineItems = lineItems,
             accountId = config.accountId ?: "",
             appKey = appKey
         )
@@ -158,8 +152,6 @@ internal class AdFactoryImpl(
             else -> false
         }
 
-        val lineItems = placement.lineItems
-
         val activity = params.activity
 
         return CloudXAdView(
@@ -190,7 +182,6 @@ internal class AdFactoryImpl(
                     connectionStatusService = connectionStatusService,
                     activityLifecycleService = activityLifecycleService,
                     appLifecycleService = appLifecycleService,
-                    lineItems,
                     config.accountId ?: "",
                     appKey = appKey
                 )

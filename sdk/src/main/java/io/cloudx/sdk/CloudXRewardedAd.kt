@@ -50,7 +50,6 @@ internal fun RewardedInterstitial(
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     listener: RewardedInterstitialListener,
-    lineItems: List<Config.LineItem>?,
     accountId: String,
     appKey: String
 ): CloudXRewardedAd {
@@ -74,7 +73,6 @@ internal fun RewardedInterstitial(
             metricsTracker,
             metricsTrackerNew,
             0,
-            lineItems,
             accountId,
             appKey
         )

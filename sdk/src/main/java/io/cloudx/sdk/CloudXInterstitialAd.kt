@@ -41,7 +41,6 @@ internal fun Interstitial(
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
     listener: InterstitialListener,
-    lineItems: List<Config.LineItem>?,
     accountId: String,
     appKey: String
 ): CloudXInterstitialAd {
@@ -65,7 +64,6 @@ internal fun Interstitial(
             metricsTracker,
             metricsTrackerNew,
             0,
-            lineItems,
             accountId,
             appKey
         )

@@ -33,7 +33,6 @@ internal fun BidInterstitialSource(
     metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     bidRequestTimeoutMillis: Long,
-    lineItems: List<Config.LineItem>?,
     accountId: String,
     appKey: String
 ): BidAdSource<SuspendableInterstitial> {
@@ -45,7 +44,6 @@ internal fun BidInterstitialSource(
             adId = placementId,
             adType = adType,
             placementName,
-            lineItems = lineItems,
             accountId = accountId,
             appKey = appKey
         ),

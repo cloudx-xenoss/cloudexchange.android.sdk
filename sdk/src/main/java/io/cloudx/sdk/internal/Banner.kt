@@ -75,7 +75,6 @@ internal fun Banner(
     connectionStatusService: ConnectionStatusService,
     activityLifecycleService: ActivityLifecycleService,
     appLifecycleService: AppLifecycleService,
-    lineItems: List<Config.LineItem>?,
     accountId: String,
     appKey: String
 ): Banner {
@@ -103,7 +102,6 @@ internal fun Banner(
             metricsTrackerNew,
             miscParams,
             0,
-            lineItems,
             accountId,
             appKey
         )

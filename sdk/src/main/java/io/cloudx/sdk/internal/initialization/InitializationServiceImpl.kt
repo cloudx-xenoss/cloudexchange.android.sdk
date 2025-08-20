@@ -1,6 +1,5 @@
 package io.cloudx.sdk.internal.initialization
 
-import android.app.Activity
 import android.content.Context
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
@@ -328,7 +327,6 @@ internal class InitializationServiceImpl(
             adId = "",
             adType = AdType.Banner.Standard,
             placementName = "",
-            lineItems = emptyList(),
             accountId = cfg.accountId ?: "",
             appKey = appKey
         )
