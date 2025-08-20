@@ -17,7 +17,7 @@ import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver.SDK_PARAM_RESPONSE_IN_MILLIS
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
-import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
+import io.cloudx.sdk.internal.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.tracking.MetricsTracker
 import org.json.JSONObject

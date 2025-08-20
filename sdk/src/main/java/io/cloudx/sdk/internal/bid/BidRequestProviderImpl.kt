@@ -12,7 +12,7 @@ import io.cloudx.sdk.internal.deviceinfo.DeviceInfoProvider
 import io.cloudx.sdk.internal.gaid.GAIDProvider
 import io.cloudx.sdk.internal.geo.GeoInfoHolder
 import io.cloudx.sdk.internal.httpclient.UserAgentProvider
-import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
+import io.cloudx.sdk.internal.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.location.LocationProvider
 import io.cloudx.sdk.internal.nativead.NativeAdSpecs
 import io.cloudx.sdk.internal.privacy.PrivacyService

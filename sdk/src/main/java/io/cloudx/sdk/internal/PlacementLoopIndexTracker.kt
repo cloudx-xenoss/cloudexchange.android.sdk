@@ -1,4 +1,4 @@
-package io.cloudx.sdk.internal.lineitem.state
+package io.cloudx.sdk.internal
 
 /**
  * Tracks loop index (i.e., how many times an ad has sent BidRequest)

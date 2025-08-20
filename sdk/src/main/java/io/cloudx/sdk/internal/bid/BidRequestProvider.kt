@@ -13,7 +13,7 @@ import io.cloudx.sdk.internal.httpclient.UserAgentProvider
 import io.cloudx.sdk.internal.location.LocationProvider
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.screen.ScreenService
-import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
+import io.cloudx.sdk.internal.PlacementLoopIndexTracker
 import org.json.JSONObject
 
 // TODO. Separate Json conversion logic from business logic.

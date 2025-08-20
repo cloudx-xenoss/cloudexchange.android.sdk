@@ -23,7 +23,7 @@ import io.cloudx.sdk.internal.adapter.BannerContainer
 import io.cloudx.sdk.internal.common.createViewabilityTracker
 import io.cloudx.sdk.internal.common.dpToPx
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
-import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
+import io.cloudx.sdk.internal.PlacementLoopIndexTracker
 
 interface AdViewListener : BasePublisherListener{
 
