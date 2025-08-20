@@ -312,7 +312,7 @@ internal class InitializationServiceImpl(
     private suspend fun sendInitSDKEvent(cfg: Config, appKey: String) {
         val deviceInfo = provideDeviceInfo()
         val sdkVersion = BuildConfig.SDK_VERSION_NAME
-        val deviceType = if (deviceInfo.isTablet) "table" else "mobile"
+        val deviceType = if (deviceInfo.isTablet) "tablet" else "mobile"
         val sessionId = cfg.sessionId + UUID.randomUUID().toString()
 
         TrackingFieldResolver.setSessionConstData(
