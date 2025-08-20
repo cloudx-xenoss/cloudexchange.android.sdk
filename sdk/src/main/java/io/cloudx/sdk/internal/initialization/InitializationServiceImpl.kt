@@ -28,9 +28,6 @@ import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
-import io.cloudx.sdk.internal.tracking.AdEventApi
-import io.cloudx.sdk.internal.tracking.InitOperationStatus
-import io.cloudx.sdk.internal.tracking.MetricsTracker
 import io.cloudx.sdk.internal.util.normalizeAndHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -54,7 +51,6 @@ internal class InitializationServiceImpl(
     private val provideConfigRequest: ConfigRequestProvider,
     private val adapterResolver: AdapterFactoryResolver,
     private val privacyService: PrivacyService,
-    private val metricsTracker: MetricsTracker,
     private val _metricsTrackerNew: MetricsTrackerNew,
     private val eventTracker: EventTracker,
     private val provideAppInfo: AppInfoProvider,
@@ -152,9 +148,6 @@ internal class InitializationServiceImpl(
 
             registerSdkCrashHandler()
 
-            // It is currently agreed to send pending metrics upon init API invocation.
-            metricsTracker.trySendPendingMetrics()
-
             val config = this.config
             if (config != null) {
                 return Result.Success(config)
@@ -176,7 +169,6 @@ internal class InitializationServiceImpl(
                 ResolvedEndpoints.resolveFrom(cfg)
                 SdkKeyValueState.setKeyValuePaths(cfg.keyValuePaths)
 
-                metricsTracker.init(appKey, cfg)
                 metricsTrackerNew.start(cfg)
 
                 val geoDataResult: Result<Map<String, String>, Error>
@@ -226,16 +218,6 @@ internal class InitializationServiceImpl(
                 metricsTrackerNew.trackNetworkCall(MetricsType.Network.GeoApi, geoRequestMillis)
             }
 
-            metricsTracker.initOperationStatus(
-                InitOperationStatus(
-                    success = configApiResult is Result.Success,
-                    startedAtUnixMillis = configRequestStartedAtMillis,
-                    endedAtUnixMillis = configRequestStartedAtMillis + configApiRequestMillis,
-                    appKey = appKey,
-                    sessionId = this.config?.sessionId
-                )
-            )
-
             metricsTrackerNew.trackNetworkCall(MetricsType.Network.SdkInit, configApiRequestMillis)
 
             configApiResult
@@ -273,8 +255,6 @@ internal class InitializationServiceImpl(
             appKey,
             config,
             factories,
-            AdEventApi(config.eventTrackingEndpointUrl),
-            metricsTracker,
             metricsTrackerNew,
             eventTracker,
             ConnectionStatusService(),

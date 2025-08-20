@@ -8,15 +8,12 @@ import io.cloudx.sdk.internal.bid.BidApi
 import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.common.service.AppLifecycleService
-import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.ad.source.bid.*
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableInterstitial
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableInterstitialEvent
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
-import io.cloudx.sdk.internal.tracking.AdEventApi
-import io.cloudx.sdk.internal.tracking.MetricsTracker
 
 // TODO. Refactor. This should do for now.
 interface CloudXInterstitialAd : BaseFullscreenAd
@@ -34,9 +31,7 @@ internal fun Interstitial(
     bidAdLoadTimeoutMillis: Long,
     bidApi: BidApi,
     cdpApi: CdpApi,
-    adEventApi: AdEventApi,
     eventTracker: EventTracker,
-    metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     connectionStatusService: ConnectionStatusService,
     appLifecycleService: AppLifecycleService,
@@ -59,9 +54,7 @@ internal fun Interstitial(
             bidApi,
             cdpApi,
             bidRequestProvider,
-            adEventApi,
             eventTracker,
-            metricsTracker,
             metricsTrackerNew,
             0,
             accountId,

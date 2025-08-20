@@ -13,7 +13,6 @@ import io.cloudx.sdk.internal.core.ad.suspendable.decorated.DecoratedSuspendable
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.EventType
 import io.cloudx.sdk.internal.imp_tracker.TrackingFieldResolver
-import io.cloudx.sdk.internal.tracking.AdEventApi
 import kotlinx.coroutines.launch
 import com.xor.XorEncryption
 import io.cloudx.sdk.internal.imp_tracker.ClickCounterTracker
@@ -145,15 +144,10 @@ fun baseAdDecoration() = AdEventDecoration()
 internal fun bidAdDecoration(
     bidId: String,
     auctionId: String,
-    adEventApi: AdEventApi,
     eventTracker: EventTracker,
 ) = AdEventDecoration(
-    onLoad = {
-        adEventApi(AdEventApi.EventType.Win, bidId)
-    },
+    onLoad = {},
     onImpression = {
-        adEventApi(AdEventApi.EventType.Impression, bidId)
-
         val scope = GlobalScopes.IO
         scope.launch {
             TrackingFieldResolver.saveLoadedBid(auctionId, bidId)

@@ -8,17 +8,13 @@ import io.cloudx.sdk.internal.adapter.BidRewardedInterstitialFactory
 import io.cloudx.sdk.internal.bid.BidApi
 import io.cloudx.sdk.internal.bid.BidRequestProvider
 import io.cloudx.sdk.internal.cdp.CdpApi
-import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.core.ad.source.adapterLoggingDecoration
 import io.cloudx.sdk.internal.core.ad.source.baseAdDecoration
 import io.cloudx.sdk.internal.core.ad.source.bidAdDecoration
 import io.cloudx.sdk.internal.core.ad.source.decorate
-import io.cloudx.sdk.internal.core.ad.source.metricsTrackerDecoration
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableRewardedInterstitial
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
-import io.cloudx.sdk.internal.tracking.AdEventApi
-import io.cloudx.sdk.internal.tracking.MetricsTracker
 
 internal fun BidRewardedInterstitialSource(
     activity: Activity,
@@ -28,9 +24,7 @@ internal fun BidRewardedInterstitialSource(
     requestBid: BidApi,
     cdpApi: CdpApi,
     generateBidRequest: BidRequestProvider,
-    adEventApi: AdEventApi,
     eventTracker: EventTracker,
-    metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     bidRequestTimeoutMillis: Long,
     accountId: String,
@@ -50,7 +44,6 @@ internal fun BidRewardedInterstitialSource(
         requestBid,
         cdpApi,
         eventTracker,
-        metricsTracker,
         metricsTrackerNew
     ) {
 
@@ -79,8 +72,7 @@ internal fun BidRewardedInterstitialSource(
             ) as Result.Success).value
         }.decorate(
             baseAdDecoration() +
-                    metricsTrackerDecoration(placementId, price, metricsTracker) +
-                    bidAdDecoration(bidId, auctionId, adEventApi, eventTracker) +
+                    bidAdDecoration(bidId, auctionId, eventTracker) +
                     adapterLoggingDecoration(
                         adUnitId = adId,
                         adNetwork = network,

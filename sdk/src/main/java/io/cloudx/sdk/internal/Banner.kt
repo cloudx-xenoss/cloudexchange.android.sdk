@@ -17,20 +17,15 @@ import io.cloudx.sdk.internal.cdp.CdpApi
 import io.cloudx.sdk.internal.common.BidBackoffMechanism
 import io.cloudx.sdk.internal.common.service.ActivityLifecycleService
 import io.cloudx.sdk.internal.common.service.AppLifecycleService
-import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.ad.source.bid.BidAdSource
 import io.cloudx.sdk.internal.core.ad.source.bid.BidAdSourceResponse
 import io.cloudx.sdk.internal.core.ad.source.bid.BidBannerSource
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBanner
 import io.cloudx.sdk.internal.core.ad.suspendable.SuspendableBannerEvent
-import io.cloudx.sdk.internal.httpclient.CloudXHttpClient
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
-import io.cloudx.sdk.internal.tracking.AdEventApi
-import io.cloudx.sdk.internal.tracking.MetricsTracker
-import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -68,9 +63,7 @@ internal fun Banner(
     miscParams: BannerFactoryMiscParams,
     bidApi: BidApi,
     cdpApi: CdpApi,
-    adEventApi: AdEventApi,
     eventTracker: EventTracker,
-    metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     connectionStatusService: ConnectionStatusService,
     activityLifecycleService: ActivityLifecycleService,
@@ -96,9 +89,7 @@ internal fun Banner(
             bidApi,
             cdpApi,
             bidRequestProvider,
-            adEventApi,
             eventTracker,
-            metricsTracker,
             metricsTrackerNew,
             miscParams,
             0,

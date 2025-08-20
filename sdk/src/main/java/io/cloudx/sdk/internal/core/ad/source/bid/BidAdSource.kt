@@ -19,7 +19,6 @@ import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.PlacementLoopIndexTracker
 import io.cloudx.sdk.internal.state.SdkKeyValueState
-import io.cloudx.sdk.internal.tracking.MetricsTracker
 import org.json.JSONObject
 import java.util.UUID
 import kotlin.system.measureTimeMillis
@@ -54,7 +53,6 @@ internal fun <T : Destroyable> BidAdSource(
     requestBid: BidApi,
     cdpApi: CdpApi,
     eventTracker: EventTracker,
-    metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     createBidAd: suspend (CreateBidAdParams) -> T,
 ): BidAdSource<T> =
@@ -64,7 +62,6 @@ internal fun <T : Destroyable> BidAdSource(
         requestBid,
         cdpApi,
         eventTracker,
-        metricsTracker,
         metricsTrackerNew,
         createBidAd
     )
@@ -88,7 +85,6 @@ private class BidAdSourceImpl<T : Destroyable>(
     private val requestBid: BidApi,
     private val cdpApi: CdpApi,
     private val eventTracking: EventTracker,
-    private val metricsTracker: MetricsTracker,
     private val metricsTrackerNew: MetricsTrackerNew,
     private val createBidAd: suspend (CreateBidAdParams) -> T,
 ) : BidAdSource<T> {
@@ -200,8 +196,6 @@ private class BidAdSourceImpl<T : Destroyable>(
                         SDK_PARAM_RESPONSE_IN_MILLIS,
                         bidRequestLatencyMillis.toString()
                     )
-
-                    metricsTracker.bidSuccess(bidRequestParams.adId, bidRequestLatencyMillis)
                 }
 
                 bidAdSourceResponse

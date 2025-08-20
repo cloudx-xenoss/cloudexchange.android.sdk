@@ -15,8 +15,6 @@ import io.cloudx.sdk.internal.connectionstatus.ConnectionStatusService
 import io.cloudx.sdk.internal.core.resolver.BidAdNetworkFactories
 import io.cloudx.sdk.internal.imp_tracker.EventTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
-import io.cloudx.sdk.internal.tracking.AdEventApi
-import io.cloudx.sdk.internal.tracking.MetricsTracker
 
 internal interface AdFactory {
     fun createInterstitial(params: CreateAdParams<InterstitialListener>): CloudXInterstitialAd?
@@ -46,8 +44,6 @@ internal fun AdFactory(
     appKey: String,
     config: Config,
     factories: BidAdNetworkFactories,
-    adEventApi: AdEventApi,
-    metricsTracker: MetricsTracker,
     metricsTrackerNew: MetricsTrackerNew,
     eventTracker: EventTracker,
     connectionStatusService: ConnectionStatusService,
@@ -58,8 +54,6 @@ internal fun AdFactory(
         appKey,
         config,
         factories,
-        adEventApi,
-        metricsTracker,
         metricsTrackerNew,
         eventTracker,
         connectionStatusService,
