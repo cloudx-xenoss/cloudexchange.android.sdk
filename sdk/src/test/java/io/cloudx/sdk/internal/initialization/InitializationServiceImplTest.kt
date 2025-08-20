@@ -44,9 +44,10 @@ class InitializationServiceImplTest : RoboMockkTest() {
             provideDeviceInfo = DeviceInfoProvider(),
             eventTracker = EventTracker(),
             geoApi = GeoApi(),
+            context = activity.applicationContext
         )
 
-        val result = initializationService.initialize("random_app_key", activity)
+        val result = initializationService.initialize("random_app_key")
 
         assert(result is Result.Success) {
             "expected Success result with config provided, got $result"
