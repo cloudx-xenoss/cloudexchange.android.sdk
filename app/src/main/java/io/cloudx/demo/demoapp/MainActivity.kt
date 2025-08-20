@@ -348,7 +348,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
         CloudX.deinitialize()
         CloudX.setHashedUserId("")
         CloudX.setPrivacy(CloudXPrivacy())
-        CloudX.setTargeting(null)
 
         CloudXInitializer.reset()
 
