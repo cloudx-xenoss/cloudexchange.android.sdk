@@ -18,8 +18,6 @@ internal class MockConfigAPIWithPredefinedConfig : ConfigApi {
             precacheSize = 5,
             auctionEndpointUrl = Config.EndpointConfig("nopoint"),
             cdpEndpointUrl = Config.EndpointConfig(""),
-            eventTrackingEndpointUrl = "nopoint",
-            metricsEndpointUrl = "nopoint",
             sessionId = "mock-sessionid-${UUID.randomUUID()}",
             // To support mock bid network adapter implementation.
             bidders = mapOf(AdNetwork.TestNetwork.let { bidderName ->
