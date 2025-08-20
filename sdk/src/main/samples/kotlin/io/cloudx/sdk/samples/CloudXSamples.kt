@@ -11,7 +11,6 @@ import io.cloudx.sdk.CloudXInterstitialAd
 import io.cloudx.sdk.CloudXIsAdLoadedListener
 import io.cloudx.sdk.CloudXPrivacy
 import io.cloudx.sdk.CloudXRewardedAd
-import io.cloudx.sdk.CloudXTargeting
 import io.cloudx.sdk.InterstitialListener
 import io.cloudx.sdk.RewardedInterstitialListener
 
@@ -21,20 +20,6 @@ internal fun cloudXSetPrivacy() {
             isUserConsent = true, // user gave consent (GDPR)
             isAgeRestrictedUser = null, // null, flag is not set (COPPA).
             isDoNotSell = true // do not sell my data (CCPA)
-        )
-    )
-}
-
-internal fun cloudXSetTargeting() {
-    // When clearing user targeting data...
-    CloudX.setTargeting(null)
-
-    // When setting user targeting data...
-    CloudX.setTargeting(
-        CloudXTargeting(
-            userID = null,
-            age = 69,
-            gender = CloudXTargeting.Gender.Female
         )
     )
 }

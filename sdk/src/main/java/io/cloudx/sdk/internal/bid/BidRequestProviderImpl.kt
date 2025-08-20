@@ -18,7 +18,6 @@ import io.cloudx.sdk.internal.nativead.NativeAdSpecs
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.screen.ScreenService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
-import io.cloudx.sdk.internal.targeting.TargetingService
 import io.cloudx.sdk.testing.SdkEnvironment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -37,7 +36,6 @@ internal class BidRequestProviderImpl(
     private val provideUserAgent: UserAgentProvider,
     private val provideGAID: GAIDProvider,
     private val privacyService: PrivacyService,
-    private val targetingService: TargetingService,
     private val locationProvider: LocationProvider,
     private val bidRequestExtrasProviders: Map<AdNetwork, BidRequestExtrasProvider>
 ) : BidRequestProvider {

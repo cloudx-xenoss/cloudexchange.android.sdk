@@ -6,7 +6,6 @@ import androidx.preference.PreferenceManager
 import io.cloudx.sdk.CloudX
 import io.cloudx.sdk.CloudXInitializationListener
 import io.cloudx.sdk.CloudXPrivacy
-import io.cloudx.sdk.CloudXTargeting
 import io.cloudx.sdk.internal.CloudXLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,8 +35,6 @@ object CloudXInitializer {
                 CloudXLogger.info(logTag, "CloudX privacy set: $it")
             }
         )
-
-        settings.trySetTargeting(logTag)
 
         CloudX.initialize(
             activity,
@@ -85,24 +82,6 @@ private fun Context.updateIabTcfGdprAppliesSharedPrefs() {
         }
         apply()
     }
-}
-
-private fun Settings.trySetTargeting(logTag: String) {
-    val targeting = if (mockUserTargetingEnabled) {
-        CloudXTargeting(
-            userID = "mock_user_id",
-            age = 69,
-            yob = 1969,
-            gender = CloudXTargeting.Gender.Female,
-            keywords = listOf("hello", "moto"),
-            data = mapOf("category" to "music", "something" to "nothing")
-        )
-    } else {
-        null
-    }
-
-    CloudX.setTargeting(targeting)
-    CloudXLogger.info(logTag, "CloudX targeting set: $targeting")
 }
 
 private fun Context.updateGppSharedPrefs() {

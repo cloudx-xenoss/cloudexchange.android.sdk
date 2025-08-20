@@ -10,7 +10,6 @@ import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.initialization.InitializationService
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
-import io.cloudx.sdk.internal.targeting.TargetingService
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -33,21 +32,6 @@ object CloudX {
     @JvmStatic
     fun setPrivacy(privacy: CloudXPrivacy) {
         privacyService.cloudXPrivacy.value = privacy
-    }
-
-    private val targetingService = TargetingService()
-
-    /**
-     * Set targeting data which is then will be used in ad loading process.
-     * @sample io.cloudx.sdk.samples.cloudXSetTargeting
-     */
-    @JvmStatic
-    @Deprecated(
-        "Use  setAppKeyValues() and setUserKeyValues() instead",
-        ReplaceWith("setAppKeyValues() and setUserKeyValues()")
-    )
-    fun setTargeting(targeting: CloudXTargeting?) {
-        targetingService.cloudXTargeting.value = targeting
     }
 
     private var initializationService: InitializationService? = null

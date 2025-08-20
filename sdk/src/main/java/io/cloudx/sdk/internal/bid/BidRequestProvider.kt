@@ -14,7 +14,6 @@ import io.cloudx.sdk.internal.httpclient.UserAgentProvider
 import io.cloudx.sdk.internal.location.LocationProvider
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.screen.ScreenService
-import io.cloudx.sdk.internal.targeting.TargetingService
 import io.cloudx.sdk.internal.lineitem.state.PlacementLoopIndexTracker
 import org.json.JSONObject
 
@@ -60,7 +59,6 @@ internal fun BidRequestProvider(
     UserAgentProvider(),
     GAIDProvider(),
     PrivacyService(),
-    TargetingService(),
     LocationProvider(),
     bidRequestExtrasProviders
 )
