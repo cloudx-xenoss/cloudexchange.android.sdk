@@ -8,6 +8,7 @@ import io.cloudx.sdk.internal.adfactory.AdFactory
 import io.cloudx.sdk.internal.config.ConfigApi
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
 import io.cloudx.sdk.internal.initialization.InitializationService
+import io.cloudx.sdk.internal.kil_switch.KillSwitchService
 import io.cloudx.sdk.internal.privacy.PrivacyService
 import io.cloudx.sdk.internal.state.SdkKeyValueState
 import io.cloudx.sdk.internal.targeting.TargetingService
@@ -36,6 +37,8 @@ object CloudX {
     }
 
     private val targetingService = TargetingService()
+    private val isSdkKilled get() = KillSwitchService().isTurnedOn()
+
 
     /**
      * Set targeting data which is then will be used in ad loading process.
@@ -155,6 +158,8 @@ object CloudX {
         placementName: String,
         listener: AdViewListener?
     ): CloudXAdView? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateBanner)
 
         val bannerParams = AdFactory.CreateBannerParams(
@@ -189,6 +194,8 @@ object CloudX {
         placementName: String,
         listener: AdViewListener?
     ): CloudXAdView? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateMrec)
         return initializationService?.adFactory?.createBanner(
             AdFactory.CreateBannerParams(
@@ -229,6 +236,8 @@ object CloudX {
         placementName: String,
         listener: InterstitialListener?
     ): CloudXInterstitialAd? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateInterstitial)
         return initializationService?.adFactory?.createInterstitial(
             AdFactory.CreateAdParams(
@@ -266,6 +275,8 @@ object CloudX {
         placementName: String,
         listener: RewardedInterstitialListener?
     ): CloudXRewardedAd? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateRewarded)
         return initializationService?.adFactory?.createRewarded(
             AdFactory.CreateAdParams(
@@ -296,6 +307,8 @@ object CloudX {
         placementName: String,
         listener: AdViewListener?
     ): CloudXAdView? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateNative)
         return initializationService?.adFactory?.createBanner(
             AdFactory.CreateBannerParams(
@@ -329,6 +342,8 @@ object CloudX {
         placementName: String,
         listener: AdViewListener?
     ): CloudXAdView? {
+        if (isSdkKilled) return null
+
         initializationService?.metricsTrackerNew?.trackMethodCall(MetricsType.Method.CreateNative)
         return initializationService?.adFactory?.createBanner(
             AdFactory.CreateBannerParams(

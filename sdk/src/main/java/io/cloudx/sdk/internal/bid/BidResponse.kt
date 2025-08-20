@@ -7,6 +7,7 @@ internal data class NoBidResponse(val id: String, val noBidResponseCode: Int, va
 internal class BidResponse(
     val auctionId: String,
     val seatBid: List<SeatBid>,
+    val killSwitchRatio: Double?
 )
 
 internal class SeatBid(

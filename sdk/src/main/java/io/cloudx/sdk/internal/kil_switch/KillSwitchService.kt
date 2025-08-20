@@ -1,22 +1,31 @@
 package io.cloudx.sdk.internal.kil_switch
 
-import android.content.Context
+import io.cloudx.sdk.internal.ApplicationContext
 
-internal class KillSwitchService(context: Context) {
-    private val prefs = context.getSharedPreferences("cloudx_prefs", Context.MODE_PRIVATE)
-    private val KEY = "kill_switch_enabled"
+internal interface KillSwitchService {
 
-    fun isEnabled(): Boolean = prefs.getBoolean(KEY, false)
+    fun newSession()
 
-    fun setEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY, enabled).apply()
-    }
+    /**
+     * Called during SDK initialization.
+     * Always rerolls decision for the new session.
+     * @return the evaluated enabled/disabled state
+     */
+    fun decideOnInit(ratio: Double?)
 
-    fun updateFromServerFlag(serverFlag: Boolean) {
-        setEnabled(serverFlag)
-    }
+    /**
+     * Called during bid response.
+     * Reuses init decision if ratio unchanged,
+     * reevaluates if ratio differs.
+     * @return the evaluated enabled/disabled state
+     */
+    fun updateOnBid(ratio: Double?)
 
-    fun clear() {
-        prefs.edit().remove(KEY).apply()
-    }
+    fun isTurnedOn(): Boolean
+}
+
+internal fun KillSwitchService(): KillSwitchService = LazySingleInstance
+
+private val LazySingleInstance by lazy {
+    KillSwitchServiceImpl(ApplicationContext())
 }

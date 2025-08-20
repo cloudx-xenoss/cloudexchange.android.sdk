@@ -1,6 +1,5 @@
 package io.cloudx.sdk.internal.initialization
 
-import android.app.Activity
 import android.content.Context
 import io.cloudx.sdk.BuildConfig
 import io.cloudx.sdk.Result
@@ -45,6 +44,7 @@ import com.xor.XorEncryption
 import io.cloudx.sdk.internal.imp_tracker.ClickCounterTracker
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsTrackerNew
 import io.cloudx.sdk.internal.imp_tracker.metrics.MetricsType
+import io.cloudx.sdk.internal.kil_switch.KillSwitchService
 
 /**
  * Initialization service impl - initializes CloudX SDK; ignores all the following init calls after successful initialization.
@@ -169,6 +169,18 @@ internal class InitializationServiceImpl(
 
             if (configApiResult is Result.Success) {
                 val cfg = configApiResult.value
+
+                // Kill switch check
+                val killSwitchRatio = 0.50
+                val isEnabled = KillSwitchService().decideOnInit(killSwitchRatio)
+                if (!isEnabled) {
+                    CloudXLogger.warn(
+                        "InitializationServiceImpl",
+                        "Kill switch is enabled, SDK will not be initialized."
+                    )
+                    return Result.Failure(Error("Kill switch is enabled"))
+                }
+
                 this.config = cfg
 
                 eventTracker.setEndpoint(cfg.trackingEndpointUrl)
