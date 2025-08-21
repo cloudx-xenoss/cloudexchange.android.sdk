@@ -5,6 +5,9 @@ on:
     tags:
       - 'v-*'
 
+env:
+  ANDROID_HOME: /Users/administrator/Library/Android/sdk
+
 jobs:
   determine-module:
     runs-on: self-hosted
@@ -63,11 +66,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
-
-      - name: 📱 Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 'latest'
 
       - name: 🔐 Make Gradle executable
         run: chmod +x ./gradlew
