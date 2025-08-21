@@ -21,27 +21,27 @@ jobs:
             echo "module=adapter-cloudx" >> $GITHUB_OUTPUT
             echo "path=adapter-cloudx" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-cloudx-" >> $GITHUB_OUTPUT
-            echo "artifactName=cloudx-adapter-cloudx-release.aar" >> $GITHUB_OUTPUT
+            echo "artifactName=adapter-cloudx-release.aar" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-meta-* ]]; then
             echo "module=adapter-meta" >> $GITHUB_OUTPUT
             echo "path=adapter-meta" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-meta-" >> $GITHUB_OUTPUT
-            echo "artifactName=cloudx-adapter-meta-release.aar" >> $GITHUB_OUTPUT
+            echo "artifactName=adapter-meta-release.aar" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-google-* ]]; then
             echo "module=adapter-google" >> $GITHUB_OUTPUT
             echo "path=adapter-google" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-google-" >> $GITHUB_OUTPUT
-            echo "artifactName=cloudx-adapter-google-release.aar" >> $GITHUB_OUTPUT
+            echo "artifactName=adapter-google-release.aar" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-mintegral-* ]]; then
             echo "module=adapter-mintegral" >> $GITHUB_OUTPUT
             echo "path=adapter-mintegral" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-mintegral-" >> $GITHUB_OUTPUT
-            echo "artifactName=cloudx-adapter-mintegral-release.aar" >> $GITHUB_OUTPUT
+            echo "artifactName=adapter-mintegral-release.aar" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-testbidder-* ]]; then
             echo "module=adapter-testbidder" >> $GITHUB_OUTPUT
             echo "path=adapter-testbidder" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-testbidder-" >> $GITHUB_OUTPUT
-            echo "artifactName=cloudx-adapter-testbidder-release.aar" >> $GITHUB_OUTPUT
+            echo "artifactName=adapter-testbidder-release.aar" >> $GITHUB_OUTPUT
           else
             echo "No matching module for tag ${{ github.ref_name }}. Skipping..."
             echo "module=" >> $GITHUB_OUTPUT
