@@ -1,44 +1,58 @@
-name: 🚀 Publish CloudX Module (Matrix)
+name: 🚀 Publish CloudX Module
 
 on:
   push:
     tags:
       - 'v-*'
 
-env:
-  ANDROID_HOME: /Users/administrator/Library/Android/sdk
-  PAT_USERNAME: ${{ secrets.PAT_USERNAME }}
-  PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-
 jobs:
-  publish:
+  determine-module:
     runs-on: self-hosted
-    strategy:
-      matrix:
-        include:
-          - module: adapter-cloudx
-            path: adapter-cloudx
-            tagPrefix: v-adapter-cloudx-
-            artifactName: cloudx-adapter-cloudx-release.aar
-          - module: adapter-meta
-            path: adapter-meta
-            tagPrefix: v-adapter-meta-
-            artifactName: cloudx-adapter-meta-release.aar
-          - module: adapter-google
-            path: adapter-google
-            tagPrefix: v-adapter-google-
-            artifactName: cloudx-adapter-google-release.aar
-          - module: adapter-mintegral
-            path: adapter-mintegral
-            tagPrefix: v-adapter-mintegral-
-            artifactName: cloudx-adapter-mintegral-release.aar
-          - module: adapter-testbidder
-            path: adapter-testbidder
-            tagPrefix: v-adapter-testbidder-
-            artifactName: cloudx-adapter-testbidder-release.aar
+    outputs:
+      module: ${{ steps.select-module.outputs.module }}
+      path: ${{ steps.select-module.outputs.path }}
+      tagPrefix: ${{ steps.select-module.outputs.tagPrefix }}
+      artifactName: ${{ steps.select-module.outputs.artifactName }}
+    steps:
+      - name: 🏷 Select module based on tag
+        id: select-module
+        run: |
+          if [[ "${{ github.ref_name }}" == v-adapter-cloudx-* ]]; then
+            echo "module=adapter-cloudx" >> $GITHUB_OUTPUT
+            echo "path=adapter-cloudx" >> $GITHUB_OUTPUT
+            echo "tagPrefix=v-adapter-cloudx-" >> $GITHUB_OUTPUT
+            echo "artifactName=cloudx-adapter-cloudx-release.aar" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == v-adapter-meta-* ]]; then
+            echo "module=adapter-meta" >> $GITHUB_OUTPUT
+            echo "path=adapter-meta" >> $GITHUB_OUTPUT
+            echo "tagPrefix=v-adapter-meta-" >> $GITHUB_OUTPUT
+            echo "artifactName=cloudx-adapter-meta-release.aar" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == v-adapter-google-* ]]; then
+            echo "module=adapter-google" >> $GITHUB_OUTPUT
+            echo "path=adapter-google" >> $GITHUB_OUTPUT
+            echo "tagPrefix=v-adapter-google-" >> $GITHUB_OUTPUT
+            echo "artifactName=cloudx-adapter-google-release.aar" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == v-adapter-mintegral-* ]]; then
+            echo "module=adapter-mintegral" >> $GITHUB_OUTPUT
+            echo "path=adapter-mintegral" >> $GITHUB_OUTPUT
+            echo "tagPrefix=v-adapter-mintegral-" >> $GITHUB_OUTPUT
+            echo "artifactName=cloudx-adapter-mintegral-release.aar" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == v-adapter-testbidder-* ]]; then
+            echo "module=adapter-testbidder" >> $GITHUB_OUTPUT
+            echo "path=adapter-testbidder" >> $GITHUB_OUTPUT
+            echo "tagPrefix=v-adapter-testbidder-" >> $GITHUB_OUTPUT
+            echo "artifactName=cloudx-adapter-testbidder-release.aar" >> $GITHUB_OUTPUT
+          else
+            echo "No matching module for tag ${{ github.ref_name }}. Skipping..."
+            echo "module=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-    name: 📦 Publish ${{ matrix.module }}
-    if: startsWith(github.ref, format('refs/tags/{0}', matrix.tagPrefix))
+  publish:
+    needs: determine-module
+    runs-on: self-hosted
+    if: ${{ needs.determine-module.outputs.module != '' }}
+    name: 📦 Publish ${{ needs.determine-module.outputs.module }}
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
@@ -50,14 +64,19 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: 📱 Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 'latest'
+
       - name: 🔐 Make Gradle executable
         run: chmod +x ./gradlew
 
       - name: 🛠 Build Release AAR
-        run: ./gradlew :${{ matrix.path }}:assembleRelease -PuseRemoteSdk=true
+        run: ./gradlew :${{ needs.determine-module.outputs.path }}:assembleRelease -PuseRemoteSdk=true
 
       - name: 📦 Publish to Maven Central
-        run: ./gradlew :${{ matrix.path }}:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true
+        run: ./gradlew :${{ needs.determine-module.outputs.path }}:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
@@ -67,14 +86,14 @@ jobs:
       - name: 📤 Upload AAR Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifactName }}
-          path: ${{ matrix.path }}/build/outputs/aar/*.aar
+          name: ${{ needs.determine-module.outputs.artifactName }}
+          path: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
 
       - name: 🚀 Create GitHub Release with AAR
         uses: softprops/action-gh-release@v1
         with:
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          files: ${{ matrix.path }}/build/outputs/aar/*.aar
+          files: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
