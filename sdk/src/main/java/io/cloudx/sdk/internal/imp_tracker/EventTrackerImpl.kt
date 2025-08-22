@@ -1,7 +1,6 @@
 package io.cloudx.sdk.internal.imp_tracker
 
 import io.cloudx.sdk.internal.Logger
-import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.db.CloudXDb
 import io.cloudx.sdk.internal.db.imp_tracking.CachedTrackingEvents
 import io.cloudx.sdk.internal.imp_tracker.bulk.EventAM
@@ -12,7 +11,6 @@ import java.util.UUID
 
 internal class EventTrackerImpl(
     private val scope: CoroutineScope,
-    private val appForegroundDurationService: AppForegroundDurationService,
     private val db: CloudXDb
 ) : EventTracker {
 

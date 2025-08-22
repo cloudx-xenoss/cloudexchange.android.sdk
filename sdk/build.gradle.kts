@@ -120,8 +120,6 @@ dependencies {
     implementation(libs.lifecycle.process)
     implementation(libs.lifecycle.runtime)
 
-    implementation(libs.startup)
-
     // Room.
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

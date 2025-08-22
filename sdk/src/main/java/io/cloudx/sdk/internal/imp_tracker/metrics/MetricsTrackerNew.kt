@@ -1,7 +1,6 @@
 package io.cloudx.sdk.internal.imp_tracker.metrics
 
 import io.cloudx.sdk.internal.GlobalScopes
-import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.Database
 import io.cloudx.sdk.internal.imp_tracker.bulk.EventTrackerBulkApi
@@ -27,7 +26,6 @@ internal fun MetricsTrackerNew(): MetricsTrackerNew = LazySingleInstance
 private val LazySingleInstance by lazy {
     MetricsTrackerNewImpl(
         GlobalScopes.IO,
-        AppForegroundDurationService(),
         EventTrackerBulkApi(),
         Database()
     )
