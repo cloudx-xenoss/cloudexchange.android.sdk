@@ -4,7 +4,6 @@ import android.util.Log
 import com.xor.XorEncryption
 import io.cloudx.sdk.Result
 import io.cloudx.sdk.internal.Logger
-import io.cloudx.sdk.internal.appfgduration.AppForegroundDurationService
 import io.cloudx.sdk.internal.config.Config
 import io.cloudx.sdk.internal.db.CloudXDb
 import io.cloudx.sdk.internal.db.metrics.MetricsEvent
@@ -19,7 +18,6 @@ import java.util.UUID
 
 internal class MetricsTrackerNewImpl(
     private val scope: CoroutineScope,
-    private val appForegroundDurationService: AppForegroundDurationService,
     private val eventTrackerBulkApi: EventTrackerBulkApi,
     private val db: CloudXDb
 ) : MetricsTrackerNew {
