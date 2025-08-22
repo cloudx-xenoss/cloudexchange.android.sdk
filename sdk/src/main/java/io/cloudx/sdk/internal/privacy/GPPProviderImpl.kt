@@ -150,17 +150,14 @@ private class GPPProviderImpl(context: Context) : GPPProvider {
 
 internal data class GppConsent(
     // USCA (SID=8) core:
-    val saleOptOutNotice: Int?,        // 0=N/A, 1=Yes, 2=No
-    val sharingOptOutNotice: Int?,     // 0=N/A, 1=Yes, 2=No
+    val saleOptOutNotice: Int?,        // 0=N/A, 1=Yes, 2=No // Not being used in `requiresPiiRemoval` logic for now according to Product Team
+    val sharingOptOutNotice: Int?,     // 0=N/A, 1=Yes, 2=No // Not being used in `requiresPiiRemoval` logic for now according to Product Team
     val saleOptOut: Int?,              // 0=N/A, 1=OptOut, 2=DidNotOptOut
     val sharingOptOut: Int?,           // 0=N/A, 1=OptOut, 2=DidNotOptOut
 ) {
     fun requiresPiiRemoval(): Boolean {
-        // Stage-1 rules you gave:
-        // - If notice not provided -> obfuscate PII
         // - If SharingOptOut == 1 OR SaleOptOut == 1 -> obfuscate PII
-        // - (Optional) If GPC == true -> obfuscate PII
-        return (saleOptOut == 1) || (sharingOptOut == 1) || (saleOptOutNotice == 2) || (sharingOptOutNotice == 2)
+        return (saleOptOut == 1) || (sharingOptOut == 1)
     }
 }
 
