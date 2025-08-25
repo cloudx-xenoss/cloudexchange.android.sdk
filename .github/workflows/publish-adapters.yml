@@ -17,6 +17,7 @@ jobs:
       tagPrefix: ${{ steps.select-module.outputs.tagPrefix }}
       artifactName: ${{ steps.select-module.outputs.artifactName }}
       version: ${{ steps.select-module.outputs.version }}
+      publishAll: ${{ steps.select-module.outputs.publishAll }}
     steps:
       - name: 🏷 Select module based on tag
         id: select-module
@@ -51,9 +52,14 @@ jobs:
             echo "tagPrefix=v-adapter-testbidder-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-testbidder-release.aar" >> $GITHUB_OUTPUT
             echo "version=${GITHUB_REF_NAME#v-adapter-testbidder-}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == v-adapter-all-* ]]; then
+            echo "publishAll=true" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-all-}" >> $GITHUB_OUTPUT
+            echo "module=" >> $GITHUB_OUTPUT
           else
             echo "No matching module for tag ${{ github.ref_name }}. Skipping..."
             echo "module=" >> $GITHUB_OUTPUT
+            echo "publishAll=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -101,3 +107,54 @@ jobs:
 #          files: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-all:
+    needs: determine-module
+    runs-on: self-hosted
+    if: ${{ needs.determine-module.outputs.publishAll == 'true' }}
+    name: 📦 Publish All Adapters
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 🔐 Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: 🛠 Build All Adapter Release AARs
+        run: |
+          ./gradlew :adapter-cloudx:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-google:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-meta:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-mintegral:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-testbidder:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+
+      - name: 📦 Publish All Adapters to Maven Central
+        run: |
+          ./gradlew :adapter-cloudx:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-google:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-meta:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-mintegral:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+          ./gradlew :adapter-testbidder:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKeyPassword }}
+
+      - name: 📤 Upload All AAR Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-adapters-${{ needs.determine-module.outputs.version }}
+          path: |
+            adapter-cloudx/build/outputs/aar/adapter-cloudx-release.aar
+            adapter-google/build/outputs/aar/adapter-google-release.aar
+            adapter-meta/build/outputs/aar/adapter-meta-release.aar
+            adapter-mintegral/build/outputs/aar/adapter-mintegral-release.aar
+            adapter-testbidder/build/outputs/aar/adapter-testbidder-release.aar
