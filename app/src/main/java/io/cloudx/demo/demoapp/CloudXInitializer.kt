@@ -1,6 +1,5 @@
 package io.cloudx.demo.demoapp
 
-import android.app.Activity
 import android.content.Context
 import androidx.preference.PreferenceManager
 import io.cloudx.sdk.CloudX
@@ -16,7 +15,7 @@ object CloudXInitializer {
     val initState = _initState.asStateFlow()
 
     fun initializeCloudX(
-        activity: Activity,
+        context: Context,
         settings: Settings,
         hashedUserId: String? = null,
         logTag: String,
@@ -24,8 +23,8 @@ object CloudXInitializer {
     ) {
         _initState.value = InitializationState.InProgress
 
-        activity.updateIabTcfGdprAppliesSharedPrefs()
-        activity.updateGppSharedPrefs()
+        context.updateIabTcfGdprAppliesSharedPrefs()
+        context.updateGppSharedPrefs()
 
         CloudX.setPrivacy(
             CloudXPrivacy(
@@ -37,7 +36,7 @@ object CloudXInitializer {
         )
 
         CloudX.initialize(
-            activity,
+            context,
             CloudX.InitializationParams(
                 appKey = settings.appKey,
                 initEndpointUrl = settings.initUrl,

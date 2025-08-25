@@ -85,11 +85,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
         }
 
-        // Enforce logging for the demo app regardless of build variant.
-        CloudXLogger.logEnabled = true
-
-        // TODO. Move to settings screen?
-        enableMetaAudienceNetworkTestMode(true)
+        // Logging and Meta test mode are now handled in DemoApplication
     }
 
     private fun BottomNavigationView.setup() {
@@ -316,7 +312,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main),
             }
 
             CloudXInitializer.initializeCloudX(
-                activity,
+                this@MainActivity,
                 settings,
                 hashedEmailForInit,
                 TAG
