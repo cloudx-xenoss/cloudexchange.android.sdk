@@ -90,3 +90,57 @@ jobs:
 #          files: sdk/build/outputs/aar/sdk-release.aar
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📢 Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚀 CloudX SDK Publishing #${{ github.run_number }} finished",
+              "attachments": [{
+                "author_name": "cloudexchange.android.sdk/publish-sdk",
+                "fallback": "SDK publishing pipeline finished",
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "value": "${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}",
+                    "short": true
+                  },
+                  {
+                    "title": "SDK Version",
+                    "value": "`${{ needs.determine-sdk.outputs.version }}`",
+                    "short": true
+                  },
+                  {
+                    "title": "Tag",
+                    "value": "`${{ github.ref_name }}`",
+                    "short": true
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "`${{ github.ref_name }}`",
+                    "short": true
+                  },
+                  {
+                    "title": "Maven Central",
+                    "value": "${{ job.status == 'success' && '📤 Uploaded to Maven Central (~30 min to publish)' || '❌ Upload failed' }}",
+                    "short": false
+                  },
+                  {
+                    "title": "Pipeline Log",
+                    "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Pipeline Log>",
+                    "short": true
+                  },
+                  {
+                    "title": "Artifacts",
+                    "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Download AAR>",
+                    "short": true
+                  }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CLOUDX_ALERTS_MOBILE_SLACK }}
