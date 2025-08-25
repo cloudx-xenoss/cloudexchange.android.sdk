@@ -3,7 +3,7 @@ name: 🚀 Publish CloudX Module
 on:
   push:
     tags:
-      - 'v-*'
+      - 'v-adapter-*'
 
 env:
   ANDROID_HOME: /Users/administrator/Library/Android/sdk
