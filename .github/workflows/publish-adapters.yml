@@ -1,4 +1,4 @@
-name: 🚀 Publish CloudX Module
+name: 🚀 Publish CloudX Adapters to MC
 
 on:
   push:
