@@ -93,11 +93,11 @@ jobs:
           name: ${{ needs.determine-module.outputs.artifactName }}
           path: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
 
-      - name: 🚀 Create GitHub Release with AAR
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          files: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: 🚀 Create GitHub Release with AAR
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          name: Release ${{ github.ref_name }}
+#          tag_name: ${{ github.ref_name }}
+#          files: ${{ needs.determine-module.outputs.path }}/build/outputs/aar/${{ needs.determine-module.outputs.artifactName }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
