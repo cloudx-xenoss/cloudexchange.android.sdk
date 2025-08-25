@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "cloudx-sdk"
+rootProject.name = "cloudx-dmeo"
 include(":app")
 
 // local dev
