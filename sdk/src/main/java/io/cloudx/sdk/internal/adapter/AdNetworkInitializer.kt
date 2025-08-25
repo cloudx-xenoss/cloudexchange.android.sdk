@@ -2,6 +2,7 @@ package io.cloudx.sdk.internal.adapter
 
 import android.content.Context
 import io.cloudx.sdk.CloudXPrivacy
+import io.cloudx.sdk.internal.CloudXLogger
 import kotlinx.coroutines.flow.StateFlow
 
 interface AdNetworkInitializer {

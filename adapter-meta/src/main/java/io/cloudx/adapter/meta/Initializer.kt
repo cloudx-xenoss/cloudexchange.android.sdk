@@ -3,7 +3,6 @@ package io.cloudx.adapter.meta
 import android.content.Context
 import com.facebook.ads.AudienceNetworkAds
 import io.cloudx.sdk.CloudXPrivacy
-import io.cloudx.sdk.internal.CloudXLogger
 import io.cloudx.sdk.internal.adapter.AdNetworkInitializer
 import io.cloudx.sdk.internal.adapter.InitializationResult
 import kotlinx.coroutines.Dispatchers
@@ -15,40 +14,47 @@ import kotlin.coroutines.resume
 internal object Initializer : AdNetworkInitializer {
 
     override suspend fun initialize(
-        context: Context, config: Map<String, String>, privacy: StateFlow<CloudXPrivacy>
+        context: Context,
+        config: Map<String, String>,
+        privacy: StateFlow<CloudXPrivacy>
     ): InitializationResult = withContext(Dispatchers.Main) {
         if (isInitialized) {
-            CloudXLogger.debug(TAG, "already initialized")
-            InitializationResult.Success
-        } else {
-            privacy.updatePrivacy()
+            log(TAG, "Meta SDK already initialized")
+            return@withContext InitializationResult.Success
+        }
 
-            suspendCancellableCoroutine<InitializationResult> { continuation ->
-                AudienceNetworkAds.buildInitSettings(context).withInitListener { initResult ->
-                    CloudXLogger.debug(TAG, "initialization status: ${initResult.message}")
+        privacy.updatePrivacy()
 
-                    if (initResult.isSuccess) {
-                        isInitialized = true
+        suspendCancellableCoroutine<InitializationResult> { continuation ->
+            val initListener = AudienceNetworkAds.InitListener { initResult ->
+                if (initResult.isSuccess) {
+                    log(TAG, "Meta SDK successfully finished initialization: ${initResult.message}")
+                    isInitialized = true
 
-                        // Sometimes adapters call [Continuation.resume] twice which they shouldn't.
-                        // So we have a try catch block around it.
-                        try {
-                            continuation.resume(InitializationResult.Success)
-                        } catch (e: Exception) {
-                            CloudXLogger.error(TAG, e.toString())
-                        }
-                    } else {
-                        continuation.resume(InitializationResult.Error(initResult.message))
+                    // Sometimes adapters call [Continuation.resume] twice which they shouldn't.
+                    // So we have a try catch block around it.
+                    try {
+                        continuation.resume(InitializationResult.Success)
+                    } catch (e: Exception) {
+                        log(TAG, "Continuation resumed more than once: ${e.message}")
                     }
-                }.initialize()
+                } else {
+                    log(TAG, "Meta SDK failed to finish initialization: ${initResult.message}")
+                    continuation.resume(InitializationResult.Error(initResult.message))
+                }
             }
+
+            AudienceNetworkAds.buildInitSettings(context)
+                .withMediationService("")
+                .withInitListener(initListener)
+                .initialize()
         }
     }
 }
 
 private var isInitialized = false
 
-private const val TAG = "MetaInitializer"
+private const val TAG = "MetaAdapterInitializer"
 
 internal const val AudienceNetworkAdsVersion = BuildConfig.AUDIENCE_SDK_VERSION_NAME
 
