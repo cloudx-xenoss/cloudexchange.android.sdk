@@ -69,7 +69,7 @@ dependencies {
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
-    coordinates("io.cloudx", "adapter-meta", "0.0.1.00") // Or set version from tag if needed
+    coordinates("io.cloudx", "adapter-meta", project.findProperty("version") as String? ?: "0.0.1.00")
 
     pom {
         name.set("CloudX Adapter - Meta")

@@ -16,6 +16,7 @@ jobs:
       path: ${{ steps.select-module.outputs.path }}
       tagPrefix: ${{ steps.select-module.outputs.tagPrefix }}
       artifactName: ${{ steps.select-module.outputs.artifactName }}
+      version: ${{ steps.select-module.outputs.version }}
     steps:
       - name: 🏷 Select module based on tag
         id: select-module
@@ -25,26 +26,31 @@ jobs:
             echo "path=adapter-cloudx" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-cloudx-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-cloudx-release.aar" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-cloudx-}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-meta-* ]]; then
             echo "module=adapter-meta" >> $GITHUB_OUTPUT
             echo "path=adapter-meta" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-meta-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-meta-release.aar" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-meta-}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-google-* ]]; then
             echo "module=adapter-google" >> $GITHUB_OUTPUT
             echo "path=adapter-google" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-google-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-google-release.aar" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-google-}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-mintegral-* ]]; then
             echo "module=adapter-mintegral" >> $GITHUB_OUTPUT
             echo "path=adapter-mintegral" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-mintegral-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-mintegral-release.aar" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-mintegral-}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref_name }}" == v-adapter-testbidder-* ]]; then
             echo "module=adapter-testbidder" >> $GITHUB_OUTPUT
             echo "path=adapter-testbidder" >> $GITHUB_OUTPUT
             echo "tagPrefix=v-adapter-testbidder-" >> $GITHUB_OUTPUT
             echo "artifactName=adapter-testbidder-release.aar" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v-adapter-testbidder-}" >> $GITHUB_OUTPUT
           else
             echo "No matching module for tag ${{ github.ref_name }}. Skipping..."
             echo "module=" >> $GITHUB_OUTPUT
@@ -71,10 +77,10 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: 🛠 Build Release AAR
-        run: ./gradlew :${{ needs.determine-module.outputs.path }}:assembleRelease -PuseRemoteSdk=true
+        run: ./gradlew :${{ needs.determine-module.outputs.path }}:assembleRelease -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
 
       - name: 📦 Publish to Maven Central
-        run: ./gradlew :${{ needs.determine-module.outputs.path }}:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true
+        run: ./gradlew :${{ needs.determine-module.outputs.path }}:publishToMavenCentral --no-daemon --stacktrace -PuseRemoteSdk=true -Pversion=${{ needs.determine-module.outputs.version }}
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}

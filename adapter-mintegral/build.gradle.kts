@@ -85,7 +85,7 @@ dependencies {
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
-    coordinates("io.cloudx", "adapter-mintegral", "0.0.1.00") // Or use version from tag as needed
+    coordinates("io.cloudx", "adapter-mintegral", project.findProperty("version") as String? ?: "0.0.1.00")
 
     pom {
         name.set("CloudX Adapter - Mintegral")

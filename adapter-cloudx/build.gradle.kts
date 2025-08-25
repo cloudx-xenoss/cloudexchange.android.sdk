@@ -83,7 +83,7 @@ dependencies {
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
-    coordinates("io.cloudx", "adapter-cloudx", "0.0.1.01") // You can set version from tag in CI
+    coordinates("io.cloudx", "adapter-cloudx", project.findProperty("version") as String? ?: "0.0.1.01")
 
     pom {
         name.set("CloudX Adapter - CloudX")

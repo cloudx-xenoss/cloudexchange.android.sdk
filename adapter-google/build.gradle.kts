@@ -66,7 +66,7 @@ mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     // Use version from tag (set via -Pversion=... or replace if you want to hardcode)
-    coordinates("io.cloudx", "adapter-google", System.getenv("GITHUB_REF_NAME") ?: "0.0.1.00")
+    coordinates("io.cloudx", "adapter-google", project.findProperty("version") as String? ?: "0.0.1.00")
 
     pom {
         name.set("CloudX Adapter - GoogleAds")
